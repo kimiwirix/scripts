@@ -4,9 +4,9 @@
 #$ -e ./Logs_errors/$JOB_NAME.error
 #$ -cwd
 #$ -S /bin/bash
-#$ -l h_rt=20:00:00   # runtime limit of 10 hours
+#$ -l h_rt=40:00:00   # runtime limit of 10 hours
 #$ -pe openmp 1         # Specify number of cores
-#$ -l h_rss=15G        # Request 15 GB of memory per core
+#$ -l h_rss=20G        # Request 15 GB of memory per core
 
 # hacer carpeta logs errors antes de correr qsub
 #cambiar nombre de manifest y de references.txt antes de correr programa 
@@ -18,14 +18,14 @@ source activate /cm/shared/apps/anaconda3/2021.05/envs/qiime2-2021.4
 #imports references 
 qiime tools import \
   --type 'FeatureData[Sequence]' \
-  --input-path reference_seqs_sangercontigR_trimmed_woprimers.txt \
+  --input-path reference_seqs_sangercontig_woprimers_wsecondrefs.txt \
   --output-path reference_seqs.qza
 
 # 6. Muestras: importea sequencias a artifacto .qza
 #quitar el .gz de archivos (gunzip -r NS*) y de manifest 
 qiime tools import \
   --type 'SampleData[PairedEndSequencesWithQuality]' \
-  --input-path manifest_all.tsv \
+  --input-path manifest_all_includingbatch3.tsv \
   --output-path paired-end-demux.qza \
   --input-format PairedEndFastqManifestPhred33V2
 
