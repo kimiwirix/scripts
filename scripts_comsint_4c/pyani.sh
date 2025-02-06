@@ -10,8 +10,12 @@
 
 
 #pyANI
+#create all directories: genomes, pyani_results, pyani_report, pyani_plots
 
-mamba activate pyani_0.3
+
+
+module load mamba/main 
+mamba activate /mnt/atgc-d3/sur/modules/pkgs/mamba/main/envs/pyani_0.3
 
 
 #creates MD5 file for each sequence and class.txt and label.txt that genearte ids to identify each genome
@@ -31,9 +35,11 @@ pyani anim \
     --labels /mnt/atgc-d3/sur/users/nsaid/4c/genomes/labels.txt 
 
 
+
 #run_results: complete set of pairwise comparison results for a single run (listed by comparison)
 #run_matrixes: comparison results as matrices (percentage identity and coverage, number of aligned bases and “similarity errors”, and a Hadamard matrix of identity multiplied by coverage).
 #runs_genomes: the genomes that were analysed in all runs 
+
 pyani report \
     --dbpath /mnt/atgc-d3/sur/users/nsaid/4c/db \
     --formats excel \
@@ -41,6 +47,7 @@ pyani report \
     --runs \
     --run_matrices 1 \
     --run_results 1  
+
     
 
 #run id depending on ids obtanined from pyani report --runs 
@@ -50,11 +57,4 @@ pyani plot \
     --o /mnt/atgc-d3/sur/users/nsaid/4c/pyani_results/pyani_plots \
     --run_ids 1 
 
-
-
-
-
-#NOTAS  
-#in pyani report --runs_genomes aparece vacio 
-#how to add organism names in matrixes and plots?? 
 
