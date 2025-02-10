@@ -1,8 +1,4 @@
-
-#Hace graficas de las comsints y las compara con el average de las singlebact (lineas punteadas) ver singlebact_mean.R, prodice dos graficas, plot_1 con NS1 y NS3 y plot_2 con NS2 y NS4
-#grafica de comsint experimentos
-#eje x: días (d0,d1,d2) o con timepoints 
-#eje y: OD600
+#COMPARA EL CRECIMIENTO DE LAS COMSINTS (OD) CON EL CRECIMIENTO DEL AVERAGE DE LAS SINGLESTRAINS 
 
 library(readODS)
 library(ggplot2)
@@ -12,119 +8,107 @@ library(tidyverse)
 library(ggpubr)
 
 
-#cambiar dependiendo el archivo 
-data_1 <- read_ods("C:/Users/natal/Documents/LIIGH/data_NS1.ods", sheet = "OD600_real")
-data_2 <- read_ods("C:/Users/natal/Documents/LIIGH/data_NS2.ods", sheet = "OD600_real")
-data_3 <- read_ods("C:/Users/natal/Documents/LIIGH/data_NS3.ods", sheet = "OD600_real")
-data_4 <- read_ods("C:/Users/natal/Documents/LIIGH/data_NS4.ods", sheet = "OD600_real")
+#datos de od data NS1 OD real 
+#datos de comsints en data NS1 comsints 
+#datos de singlebact para singlebacte mean en data test bact y data test single 
 
-od600_1 <- as.data.frame(data_1)
-od600_2 <- as.data.frame(data_2)
-od600_3 <- as.data.frame(data_3)
-od600_4 <- as.data.frame(data_4)
+#data 1 y 2 son las réplicas de crecimiento de bact indiviiduales 
+data_ss_1 <- read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/data_test_single_strains.ods", sheet = "OD_1") %>%
+  as.data.frame()%>%
+  rename("0"="t_0", "4"="t_1", "20"="t_2", "24"="t_3", "48"="t_4", "72"="t_5")%>%
+  select(-"4",-"20") %>%
+  filter(!strain %in% c("ST00122","ST00021")) 
 
-od600_1<-rbind(od600_1,od600_3)
-od600_2<-rbind(od600_2,od600_4)
+data_ss_2 <- read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/data_test_bacteria_comsint.ods", sheet = "OD600")%>%
+  rename("0"="t_0", "24"="t_1", "48"="t_2", "72"="t_3")%>%
+  full_join(data_ss_1)%>%
+  group_by(strain, temp)%>%
+  summarize(across(c("0","24","48","72"), mean))%>%
+  as.data.frame()
 
-
-
-data_singlestrains <- read_ods("C:/Users/natal/Documents/LIIGH/data_test_bacteria_comsint.ods", sheet = "OD600")
-ns1 <- read_ods("C:/Users/natal/Documents/LIIGH/data_NS1.ods", sheet = "syncoms")
-ns2 <- read_ods("C:/Users/natal/Documents/LIIGH/data_NS2.ods", sheet = "syncoms")
-
-od600_ss <- as.data.frame(data_singlestrains)
-ns1_comsints <- as.data.frame(ns1)
-ns2_comsints <- as.data.frame(ns2)
+data_ss<-melt(data = data_ss_2, id.vars = c("strain", "temp"), variable.name = "time", value.name = "od600")
 
 
-#cambiar en for loop 
-comsints_1<-c('R1','R2','R3','R4','R5','R6')
-comsints_2<-c('R7','R8','R9','R10','R11','R12')
+###community composition, which strain should be in which community 
+ns1 <- read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/data_NS1.ods", sheet = "syncoms")%>%
+  as.data.frame()
+ns2 <- read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/data_NS2.ods", sheet = "syncoms")%>%
+  as.data.frame()%>%
+  select(-"strain")
 
-for (comsint in comsints_2){
-  
-  #selecciona las filas con las bcaterias del mismo nombre
-  df_bact_1<-od600_2[od600_2$Community==comsint,] 
-  
-  #quita la columna con bact name y rename colnames 
-  df_bact_1$Community<-NULL
-  colnames(df_bact_1)<-c('temp','0','24','48','72')
-  
-  #adds medicion para poder juntar los 28 y los 32 de un solo color 
-  df_bact_1$medicion<-c(1,2,3,4) 
-  
-  
-  #meltea la data en tabla dependiendo de la medicion y temp 
-  melt_data <- melt(df_bact_1, id = c('medicion', 'temp'), variable.name = 'timeline')
+ns<-cbind(ns1,ns2) 
 
-  
-  #corta strain col con community col
-  
-  #variable<-paste('R',i,sep='')
-  com_strains<-ns2_comsints[,c('strain',comsint)] #va loopeando y poniendo col de nombres con col de comunidad
-  com_strains<-com_strains[complete.cases(com_strains),] #quita NAs
-    
-    
-  comsint_info_cortada<-merge(com_strains,od600_ss, by='strain') #junta los dos dfs con el strain number
-  colnames(comsint_info_cortada)<-c('strain','community','temp','0','24','48','72')
-  comsint_info_cortada$community<-NULL
-  df_melted <- melt(comsint_info_cortada,  id.vars = c('temp','strain'), variable.name = 'timeline')
-  promedio<-aggregate(value ~ temp + timeline, data=df_melted, FUN=mean) #saca promedio de od de las bacterias en la comunidad por temperatura por timeline
-    
-  assign(comsint,promedio)
-    
-  
-  plot_name<-paste('plot', comsint, sep='_')
-  melt_data$temp<-as.factor(melt_data$temp)
-  promedio$temp<-as.factor(promedio$temp)
-  
- #buen plot  
-  temp_plot<-ggplot(NULL, aes(timeline,value))+
-    geom_line(data=melt_data, aes(group=medicion, colour=temp))+
-    geom_line(data=promedio, aes(group=temp, colour=temp),linetype = "dashed")+
-    scale_color_manual(values = c( "#3333FF", "#FF6600"))+
-    ggtitle(comsint)+
-    xlab('Total time (h)') + ylab('OD 600')+
-    labs(colour ='Temperature (°C)')+
-    theme(plot.title = element_text(hjust = 0.5))+
-    ylim(0,1.5)
-  
-   
-  #se queda   
-  assign(plot_name, temp_plot)
-}
+ns<-melt(ns, id.vars = "strain")%>%
+  filter(!is.na(value))
+
+data_ss<-merge(data_ss,ns, by = "strain")
+
+data_ss<-data_ss%>%
+  group_by(temp,time,variable)%>%
+  summarize(mean_value = mean(od600, na.rm = TRUE))%>%
+  as.data.frame()%>%
+  rename("Community"="variable", "od600"="mean_value")
+
+
+
+#data ods per comsint 
+data_comsint_1 <- read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/data_NS1.ods", sheet = "OD600_real") %>%
+  mutate(exp="NS1")%>%
+  as.data.frame()
+data_comsint_2 <- read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/data_NS2.ods", sheet = "OD600_real") %>%
+  mutate(exp="NS2")%>%  
+  as.data.frame()
+data_comsint_3 <- read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/data_NS3.ods", sheet = "OD600_real") %>%
+  mutate(exp="NS3")%>%  
+  as.data.frame()
+data_comsint_4 <- read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/data_NS4.ods", sheet = "OD600_real") %>%
+  mutate(exp="NS4")%>%  
+  as.data.frame()
+
+
+data_comsints<-rbind(data_comsint_1,data_comsint_2,data_comsint_3,data_comsint_4)
+colnames(data_comsints)<-c("Community","temp", "0","24","48","72", "exp")
+
+
+data_comsints<-melt(data_comsints, id.vars=c("Community","exp","temp"), 
+                    variable.name = "time", value.name = "od600") 
 
 
 
 
- 
-#arrange all plots in one window, with shared legened
-plot_1<-ggarrange(
-  `plot_R1`,`plot_R2`,`plot_R3`,`plot_R4`, `plot_R5`, `plot_R6`, # list of plots
-  labels = NULL, # labels
-  common.legend = TRUE, # COMMON LEGEND
-  legend = "bottom", # legend position
-  align = "hv", # Align them both, horizontal and vertical
-  nrow = 3, # number of rows
-  ncol=2
-)
+#PLOT
+communities<-c("R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12")
+colors<-c("28"="#63B8FF", "32"="lightsalmon")
 
 
-plot_2<-ggarrange(
-  `plot_R7`,`plot_R8`,`plot_R9`,`plot_R10`, `plot_R11`, `plot_R12`, # list of plots
-  labels = NULL, # labels
-  common.legend = TRUE, # COMMON LEGEND
-  legend = "bottom", # legend position
-  align = "hv", # Align them both, horizontal and vertical
-  nrow = 3, # number of rows
-  ncol=2
-)
+data_comsints$Community <- factor(data_comsints$Community, levels = communities) # Custom order
+data_ss$Community <- factor(data_ss$Community, levels = communities) # Custom order
 
 
-plot_1
-plot_2
+plot<-ggplot(NULL, aes(x = time, y = od600))+
+  geom_line(data=data_comsints, aes(group = interaction(temp, exp), colour = as.factor(temp), linetype="Synthetic communities"))+
+  geom_line(data=data_ss, aes(group = temp, colour = as.factor(temp), linetype = "Single strains"))+
+  facet_wrap(~Community)+
+  scale_color_manual(values =colors)+
+  scale_linetype_manual(values = c("Synthetic communities" = "solid", "Single strains" = "dashed")) +
+  labs(title = "Growth: Individual vs Communities  ", y = "OD600", x = "Time (hrs)", color="Temperature (°C)", linetype="Growth")+
+  theme(plot.title = element_text(hjust = 0.5))
 
-ggsave(plot_1, file="NS1_NS3_comparison_plot.png", width = 14, height = 14, units = "cm")
-ggsave(plot_2, file="NS2_NS4_comparison_plot.png", width = 14, height = 14, units = "cm")
+
+
+plot  
+ggsave(plot, 
+       path="C:/Users/natal/Documents/LIIGH/results/results_comsint_rhizos/indiv_and_comsint_graphs/",
+       filename ="comparison_plot.png",
+       width = 30, height = 14, units = "cm")
+
+
+
+
+
+
+
+
+
 
 
