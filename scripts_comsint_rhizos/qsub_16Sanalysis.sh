@@ -54,7 +54,7 @@ qiime vsearch cluster-features-open-reference \
   --i-table dereplicated-table.qza \
   --i-sequences dereplicated-seqs.qza \
   --i-reference-sequences reference_seqs.qza \
-  --p-perc-identity 0.97 \
+  --p-perc-identity 0.99 \
   --o-clustered-table table-cr-85.qza \
   --o-clustered-sequences rep-seqs-cr-85.qza \
   --o-new-reference-sequences new-references-cr-85.qza
