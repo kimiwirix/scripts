@@ -17,12 +17,6 @@ distance_mat<-as.dist(distance_mat)
 cluster_mat<-hclust(distance_mat)
 
 
-
-<<<<<<< Updated upstream
-png(file="C:/Users/natal/Documents/LIIGH/docs/docs_comsint_4c/dendogram.png",
-    width=32,height=18,units="cm",res=1200)
-plot(cluster_mat, cex=0.6)
-=======
 colors<-c("red", "blue", "green","orange", "purple", "yellow", "cyan", "darkgreen", "magenta", "darkblue",  "pink", "darkred", "gray", "gold", "brown")
 
 
@@ -48,7 +42,7 @@ cluster_mat%>%
   plot
 
 
->>>>>>> Stashed changes
+
 dev.off()
 
 
