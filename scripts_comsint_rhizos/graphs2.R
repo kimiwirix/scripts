@@ -1,4 +1,4 @@
-#same bacteria in differente communities 
+#same bacteria in different communities 
 
 library(readODS)
 library(reshape2)
@@ -77,6 +77,13 @@ for (comsint in communities){ #loop de cada comunidad por cada temperatura
 }
 
 
+
+
+
+
+
+
+
 #######individual barplots
 
 avg_per_comm_strain <- all_tables_filtered %>%   #de la tabla por strain quita temps de día 0, y agrupa por comunidad y temp los values y saca el promedio de values por cada temp en cada community
@@ -151,6 +158,10 @@ boxplot_all_strains<-ggplot(data= filtered_data, aes(x=temp,y=value))+
 
 boxplot_all_strains
 ggsave(filename = "boxplot.png", plot = boxplot_all_strains, bg="white", width = 30, height = 14, units = "cm")
+
+
+
+
 
 
 
