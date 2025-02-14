@@ -14,7 +14,7 @@ library(tidyr)
 
 
 #cambiar dependiendo el archivo 
-frequency_table<-read_ods("C:/Users/natal/Documents/LIIGH/results/results_comsint_rhizos/analisis/analisis_freq_allbatches/feature-table-open-all-allbatches.ods", sheet = "matched")
+frequency_table<-read_ods("C:/Users/natal/Documents/LIIGH/results/results_comsint_rhizos/analisis/analisis_freq_allbatches_99ident/feature-table-open-all-99ident.ods", sheet = "matched")
 frequency_table<-frequency_table %>%
   column_to_rownames(var="#OTU ID") %>%
   as.matrix()
@@ -103,8 +103,10 @@ plot<-ggplot(data = melt_data, aes(x = hrs, y = mean_value, fill = strain))+
   theme_minimal()+
   theme(plot.title = element_text(hjust = 0.5))
 
+plot
+
 ggsave(plot,
-       filename="C:/Users/natal/Documents/LIIGH/results/results_comsint_rhizos/graphs/strains in comsint/avg_NS_barplot_allbatches.png" ,
+       filename="C:/Users/natal/Documents/LIIGH/results/results_comsint_rhizos/graphs/strains in comsint/avg_NS_barplot_allbatches_99ident.png" ,
        bg="white",  width = 30, height = 14, units = "cm")
 
 
