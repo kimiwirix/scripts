@@ -11,7 +11,7 @@ library(ggnewscale)
 
 
 #cambiar dependiendo el archivo 
-frequency_table<-read_ods("C:/Users/natal/Documents/LIIGH/feature-table-open-all-allbatches.ods", sheet = "matched")
+frequency_table<-read_ods("C:/Users/natal/Documents/LIIGH/results/results_comsint_rhizos/analisis/analisis_freq_allbatches_99ident/feature-table-open-all-99ident.ods", sheet = "matched")
 frequency_table<-frequency_table %>%
   column_to_rownames(var="#OTU ID") %>%
   as.matrix()
@@ -28,21 +28,21 @@ proportion_table$label<-rownames(proportion_table) #pone como primera columna lo
 
 
 #METADATA 
-NS1<-read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/collection_sheet.ods", sheet="full")
-NS1<-as.data.frame(NS1)
-NS1<-NS1[c("community","hrs","temp","label","techrep","exp")]#solo deja el dataframe con esas columnas 
+NS1<-read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/collection_sheet.ods", sheet="full")%>%
+  as.data.frame()%>%
+  select("community", "label", "techrep", "exp", "temp", "hrs")
 
-NS2<-read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/collection_sheet_NS2.ods", sheet="full")
-NS2<-as.data.frame(NS2)
-NS2<-NS2[c("community","hrs","temp","label","techrep","exp")]
+NS2<-read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/collection_sheet_NS2.ods", sheet="full")%>%
+  as.data.frame()%>%
+  select("community", "label", "techrep", "exp", "temp", "hrs")
 
-NS3<-read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/collection_sheet_NS3.ods", sheet="full")
-NS3<-as.data.frame(NS3)
-NS3<-NS3[c("community","hrs","temp","label","techrep","exp")]
+NS3<-read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/collection_sheet_NS3.ods", sheet="full")%>%
+  as.data.frame()%>%
+  select("community", "label", "techrep", "exp", "temp", "hrs")
 
-NS4<-read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/collection_sheet_NS4.ods", sheet="full")
-NS4<-as.data.frame(NS4)
-NS4<-NS4[c("community","hrs","temp","label","techrep","exp")]
+NS4<-read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/collection_sheet_NS4.ods", sheet="full")%>%
+  as.data.frame()%>%
+  select("community", "label", "techrep", "exp", "temp", "hrs")
 
 NS<-rbind(NS1,NS2,NS3,NS4)
 
@@ -56,11 +56,16 @@ labels_B<- c("NS00037B", "NS00038B", "NS00039B", "NS00040B", "NS00041B", "NS0004
 labels_A <- gsub("B$", "A", labels_B)
 
 
+removedlabels<-c("NS00071A", "NS00072A", "NS00078A", "NS00079B", "NS00083B", "NS00084B", "NS00089B", "NS00090B", "NS00100A", "NS00118A", "NS00130A", "NS00161A", "NS00173B")
+
+
+#quita las muetsras que son contaminacion en contamination_matched.r y filtra por día
+
 metadata<-NS%>%
   filter(techrep=="A" | (techrep=="B" & label %in% labels_B)) %>%
   filter(!label %in% labels_A)%>%
-  filter(!label == "NS00087A") #lost sample:(
-
+  filter(!label == "NS00087A") %>% #lost sample:(
+  filter(!(label %in% removedlabels))#quita las muetsras que son contaminacion
 
 #merge 
 proportion_metadata<-merge(proportion_table, metadata, by = "label") #mergea metadata con proportion table por el label name 
@@ -68,8 +73,6 @@ proportion_metadata<-merge(proportion_table, metadata, by = "label") #mergea met
 proportion_metadata[, 2:10] <- apply(proportion_metadata[,2:10], 2, as.numeric) #las columnas que tienen numeros de frequencias los convierte a numeric
 proportion_metadata$group<-ifelse(proportion_metadata$exp %in% c("NS1", "NS3"), "Group1", "Group2") #agrupa NS1 y NS3 en Group1 y NS2 y NS4 en group 2 
 proportion_metadata
-
-
 
 
 #pca
@@ -118,6 +121,38 @@ Dat %>%
   theme_classic()
 
 
+
+
+
+
+#PCA POR EXP 
+#si quito comsint R10 y R5 se ve mas claro el plot 
+Dat %>%
+  ggplot(aes(x = PC1, y = PC2)) +
+  labs(title = "PCA", y = "PC2 (%)", x = "PC1 (%)", fill="Category")+
+  
+  geom_point(data = Dat %>% filter(group == "Group1" & community!="R5"),
+             shape = 20, size = 4, aes(colour  = "Exp1&3"))+
+  geom_point(data = Dat %>% filter(group == "Group2" & community!="R10"),
+             shape = 20, size = 4, aes(colour = "Exp2&4")) +
+  geom_point(data = Dat %>% filter(community=="R1" | community=="R7"),
+             shape = 20, size = 4, aes(colour = "R1&R7"))+
+  geom_point(data = Dat %>% filter(hrs == 0 & group == "Group1"),
+             shape = 20, size = 4, aes(colour = "Inoculum"))+
+  geom_point(data = Dat %>% filter(hrs == 0 & group == "Group2"),
+             shape = 20, size = 4, aes(colour = "Inoculum2"))+
+  scale_color_manual(values = c("Exp1&3" = "red",
+                                "Exp2&4" = "blue",
+                                "R1&R7" = "black",
+                                "Inoculum"="lightsalmon",
+                                "Inoculum2"="lightblue")) +
+  theme_classic()
+
+
+ 
+
+
+
 #BOXPLOTS
 Dat %>%
   mutate(hrs = factor(hrs)) %>%
@@ -126,7 +161,7 @@ Dat %>%
   facet_grid(~temp, scales = "free_x", space = "free_x") +
   geom_boxplot(outlier.color = NA) + 
   geom_point(position = position_jitter(width = 0.2)) +
-  labs( x = "Time (hrs)", y="PC2 (32.06%)") +
+  labs( x = "Time (hrs)", y="PC2 (30.75%)") +
   theme_classic()
 
 
@@ -145,10 +180,4 @@ Dat %>%
   labs( x = "Time (hrs)") +
   theme_classic()
 
-Dat
 
-
-#no se si esto sirve?
-varpart_result <- varpart(Freq, ~ community  , ~ hrs+temp , data = Meta)
-plot(varpart_result)
-summary(varpart_result)

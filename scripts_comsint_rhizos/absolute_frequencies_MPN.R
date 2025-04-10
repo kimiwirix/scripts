@@ -4,19 +4,19 @@ library(readODS)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
+library(reshape2)
 
-proportion_sheet<-read_ods("C:/Users/natal/Documents/LIIGH/proportion_metadata_99perc_identity_MPN.ods", sheet = "proportion_metadata_99perc_identity")%>%
-  as.data.frame()%>%
-  select(!"...1")
+proportion_sheet<-read_ods("C:/Users/natal/Documents/LIIGH/results/results_comsint_rhizos/proportion_metadata_99perc_identity_MPN.ods", sheet = "proportion_metadata_99perc_identity")%>%
+  as.data.frame()
 
-MPN_sheet<-read_ods("C:/Users/natal/Documents/LIIGH/proportion_metadata_99perc_identity_MPN.ods", sheet = "MPN")%>%
+MPN_sheet<-read_ods("C:/Users/natal/Documents/LIIGH/results/results_comsint_rhizos/proportion_metadata_99perc_identity_MPN.ods", sheet = "MPN")%>%
   as.data.frame()%>%
   drop_na()%>%
   mutate_at("temp", as.character) #temp in proportion_sheet is as character, not as numeric due to NAs 
 
 strains<-c("ST00046", "ST00154", "ST00101" ,"ST00109", "NS_042g_27F","ST00143" , "NS_164C_27F" , "ST00094" ,"NS_110C_1_27F" , "ST00060" )
 
-prop_MPN<-inner_join(proportion_sheet, MPN_sheet, by = c("community", "temp", "exp", "hrs"))%>%
+prop_MPN<-inner_join(proportion_sheet, MPN_sheet, by = c("community", "temp", "exp", "hrs", "label"))%>%
   mutate(across(all_of(strains), function(x) x* `CFU/ml` ))
 
 melted_prop_MPN<-melt(prop_MPN, id = c("label", "community", "hrs", "temp", "techrep", "exp", "CFU/ml"), variable.name = "strain")
