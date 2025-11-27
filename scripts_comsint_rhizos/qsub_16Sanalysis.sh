@@ -1,12 +1,12 @@
 #!/bin/env bash
-#$ -N raw_16Sanalysis_all
+#$ -N raw_16Sanalysis_pruebas_kits_plus_448b
 #$ -o ./Logs_errors/$JOB_NAME.log
 #$ -e ./Logs_errors/$JOB_NAME.error
 #$ -cwd
 #$ -S /bin/bash
 #$ -l h_rt=40:00:00   # runtime limit of 10 hours
-#$ -pe openmp 1         # Specify number of cores
-#$ -l h_rss=20G        # Request 15 GB of memory per core
+#$ -pe openmp 2         # Specify number of cores
+#$ -l h_rss=30G        # Request 15 GB of memory per core
 
 # hacer carpeta logs errors antes de correr qsub
 #cambiar nombre de manifest y de references.txt antes de correr programa 
@@ -18,14 +18,14 @@ source activate /cm/shared/apps/anaconda3/2021.05/envs/qiime2-2021.4
 #imports references 
 qiime tools import \
   --type 'FeatureData[Sequence]' \
-  --input-path reference_seqs_sangercontig_woprimers_wsecondrefs.txt \
+  --input-path reference_seqs_sangercontigR_trimmed_wo_primers_plus448b.txt \
   --output-path reference_seqs.qza
 
 # 6. Muestras: importea sequencias a artifacto .qza
 #quitar el .gz de archivos (gunzip -r NS*) y de manifest 
 qiime tools import \
   --type 'SampleData[PairedEndSequencesWithQuality]' \
-  --input-path manifest_all_includingbatch3.tsv \
+  --input-path manifest.tsv \
   --output-path paired-end-demux.qza \
   --input-format PairedEndFastqManifestPhred33V2
 
@@ -38,9 +38,9 @@ qiime vsearch join-pairs \
 
 # 8. Filtro por q score, trimmea los ends que esten muy degradados 
 qiime quality-filter q-score \
-    --i-demux paired-end-merged.qza \
-    --o-filtered-sequences demux-filtered.qza \
-    --o-filter-stats demux-filter-stats.qza
+  --i-demux paired-end-merged.qza \
+  --o-filtered-sequences demux-filtered.qza \
+  --o-filter-stats demux-filter-stats.qza
 
 # 9. Agrupa las secuencias repetidas para que la comparcion con las referencias no sea tan larga
 qiime vsearch dereplicate-sequences \

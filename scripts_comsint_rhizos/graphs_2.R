@@ -1,6 +1,4 @@
-#grafica las frequencies de las cepas dentro de cada comsint(R1-R12) en los días (0-2) y compara las graficas entre temps (28 y 32)
-#opción de gráfica de dispersión o por barplot de frecuencias 
-#all changes of frequencies in every community 
+#plots the effect of temperature in the 10 strains across comsints, in boxplots 
 
 library(readODS)
 library(reshape2)
@@ -14,7 +12,7 @@ library(tidyr)
 
 
 #cambiar dependiendo el archivo 
-frequency_table<-read_ods("C:/Users/natal/Documents/LIIGH/results/results_comsint_rhizos/analisis/analisis_freq_allbatches_99ident/feature-table-open-all-99ident.ods", sheet = "matched")
+frequency_table<-read_ods("C:/Users/natal/Documents/LIIGH/results/results_comsint_rhizos/analisis/analisis_freq_allbatches/feature-table-open-all-allbatches.ods", sheet = "matched")
 frequency_table<-frequency_table %>%
   column_to_rownames(var="#OTU ID") %>%
   as.matrix()
@@ -48,6 +46,7 @@ NS4<-NS4[c("community","hrs","temp","label","techrep","exp")]
 NS<-rbind(NS1,NS2,NS3,NS4)
 
 
+
 #TABLE AND METADATA MERGED
 
 #NS that we had to use techrep B since A failed
@@ -67,54 +66,73 @@ metadata<-NS%>%
 
 proportion_metadata<-merge(proportion_table, metadata, by = "label") #mergea metadata con proportion table por el label name 
 
+strains<-c("NS_042g_27F","ST00046","ST00060","ST00094","ST00101","ST00109", "ST00143","ST00154","NS_164C_27F","NS_110C_1_27F")
 communities<-c("R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12")
 custom_colors <- c("ST00046" = "#25383C", "ST00154" = "#08519C", "ST00101" = "#00E5EE","ST00109" = "#4682B4", "NS_042g_27F" = "#BDD7E7",
                    "ST00143" = "#8B2323", "NS_164C_27F" = "#CD2626", "ST00094" = "#FF3030","NS_110C_1_27F" = "#EE6A50", "ST00060" = "#FCAE91")
 
 
+
 proportion_metadata
+
+#Removed NAs (day 0) measurements from dataset 
+proportion_metadata<-proportion_metadata%>%
+  filter(temp!="NA")
 
 melt_data <- melt(proportion_metadata, id = c('label', 'hrs', 'community','techrep','temp','exp'), variable.name = 'strain')#reorganiza tabla por strains 
 
-#df_NAs duplica las filas que tienen NA de temp, y a una le pone 28 y a otra 32 para que aparezcan dentro del plot en tiempo 0
-df_NAs <- melt_data %>%
-  filter(temp=="NA")%>%
-  uncount(2) %>%
-  mutate(temp = rep(c("28", "32"), length.out = n())) 
-
 melt_data <- melt_data %>% #de la tabla por strain quita día 0-temp NA, y agrupa por comunidad y temp los values y saca el promedio de values por cada temp en cada community
-  filter(temp != "NA")%>%
-  rbind(df_NAs)%>%
   group_by(strain ,community , temp, hrs)%>%
   summarise(mean_value = mean(value, na.rm = TRUE), .groups = "drop")%>%
   as.data.frame()
 
-
 melt_data$community <- factor(melt_data$community, levels = communities) # Custom order
 
 
-plot<-ggplot(data = melt_data, aes(x = hrs, y = mean_value, fill = strain))+
-  geom_bar(position = "stack", stat = "identity")+
-  scale_fill_manual(values = custom_colors)+
-  facet_wrap(~community+temp, ncol = 6)+
-  scale_x_continuous(breaks = c(0, 24, 48,72))+
-  labs(title = "Community composition through time and temperature",
-       y = "Abundance", x = "Time (hrs)", fill="Strain") + 
-  theme_minimal()+
+
+boxplot<-ggplot(data= melt_data, aes(x=temp,y=mean_value))+
+  geom_boxplot()+
+  geom_point()+
+  facet_wrap(~strain)+
+  labs(title = "Strains in communities",
+       y = "Abundance", x = "Temperature") +
+  theme_classic()+
   theme(plot.title = element_text(hjust = 0.5))
 
-plot
+boxplot
 
-ggsave(plot,
-       filename="C:/Users/natal/Documents/LIIGH/results/results_comsint_rhizos/graphs/strains in comsint/avg_NS_barplot_allbatches_99ident.png" ,
-       bg="white",  width = 30, height = 14, units = "cm")
+ggsave(filename = "C:/Users/natal/Documents/LIIGH/results/results_comsint_rhizos/graphs/strains across comsints/boxplot_allbatches.png", 
+         plot = boxplot, 
+         bg="white", width = 30, height = 14, units = "cm")
 
 
 
-#export metadata info to upload in cluster shared_data
-write.table(metadata, 
-            file='C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/metadata_allbatches.tsv', 
-            quote=FALSE, 
-            sep='\t', 
-            row.names = FALSE)
+
+###change in temperature does not have a statistically significant effect on the value for any of the communities
+
+community_tests <- melt_data %>%
+  group_by(community)%>%
+  summarize(
+    p_value = wilcox.test(mean_value[temp == 28], mean_value[temp == 32], exact = FALSE)$p.value)
+
+community_tests <- community_tests %>%
+  mutate(significant = ifelse(p_value < 0.05, "Yes", "No"))
+
+community_tests
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

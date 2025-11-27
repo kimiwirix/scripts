@@ -1,3 +1,5 @@
+
+library(tidyverse)
 library(readODS)
 library(stats)
 library(FactoMineR)
@@ -5,198 +7,143 @@ library(factoextra)
 library(ggfortify)
 library(vegan)
 library(ape)
+library(ggnewscale)
 
-frequency_table<-read_ods("C:/Users/natal/Documents/LIIGH/16S analysis/total_abundance_table.ods")
-frequency_table<-as.matrix(frequency_table)
-colnames(frequency_table) <- ifelse(grepl("^N5", colnames(frequency_table)), sub("5", "S", colnames(frequency_table)), colnames(frequency_table)) #cambia el primer 5 a S de solo los que empiezan con N5
-rownames(frequency_table)<-frequency_table[,1] #pone ids como rownames y los quita de la columna 1
-frequency_table<- frequency_table[,-1]#quita primera columna de ids
-class(frequency_table)<-"numeric"
+
+#cambiar dependiendo el archivo 
+frequency_table<-read.table(file = 'C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/clean_tables/f_clean.tsv', sep = '\t', header = TRUE, row.names = "row.names")
 
 proportion_table<-apply(frequency_table, 2, function(x) x/sum(x)) 
-proportion_table
-options(scipen=999)#quita scientific notation 
+proportion_table<-proportion_table %>%   
+  t() %>%
+  as.data.frame()
 
-proportion_table<-t(proportion_table)#transpose
-
-proportion_table
-NS1<-read_ods("C:/Users/natal/Documents/LIIGH/collection_sheet.ods", sheet="full")
-NS1<-as.data.frame(NS1)
-NS1<-NS1[c("community","hrs","temp","label","techrep","exp")]#solo deja el dataframe con esas columnas 
-
-NS2<-read_ods("C:/Users/natal/Documents/LIIGH/collection_sheet_NS2.ods", sheet="full")
-NS2<-as.data.frame(NS2)
-NS2<-NS2[c("community","hrs","temp","label","techrep","exp")]
-
-NS3<-read_ods("C:/Users/natal/Documents/LIIGH/collection_sheet_NS3.ods", sheet="full")
-NS3<-as.data.frame(NS3)
-NS3<-NS3[c("community","hrs","temp","label","techrep","exp")]
-
-NS4<-read_ods("C:/Users/natal/Documents/LIIGH/collection_sheet_NS4.ods", sheet="full")
-NS4<-as.data.frame(NS4)
-NS4<-NS4[c("community","hrs","temp","label","techrep","exp")]
+proportion_table$label<-rownames(proportion_table) #pone como primera columna los rownames para mergear con las otras tablas
 
 
-NS<-rbind(NS1,NS3,NS2,NS4)
 
+#METADATA 
+metadata_table<-read.table(file = 'C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/clean_tables/metadata_clean.tsv', sep = '\t', header = TRUE)
 
-metadata <- NS[NS$techrep == "A", ]
-proportion_table<-cbind(label=rownames(proportion_table), proportion_table) #pone rownames como primera columna y los llama label 
-proportion_metadata<-merge(proportion_table, metadata, by = "label") #mergea metadata con proportion table por el label name 
+#merge 
+proportion_metadata<-merge(proportion_table, metadata_table, by = "label") #mergea metadata con proportion table por el label name 
 
 proportion_metadata[, 2:10] <- apply(proportion_metadata[,2:10], 2, as.numeric) #las columnas que tienen numeros de frequencias los convierte a numeric
 proportion_metadata$group<-ifelse(proportion_metadata$exp %in% c("NS1", "NS3"), "Group1", "Group2") #agrupa NS1 y NS3 en Group1 y NS2 y NS4 en group 2 
 proportion_metadata
 
 
-#PCA
-pca <- prcomp(proportion_metadata[,c(2:10)])#solo hace pca de columnas con frequencies
-autoplot(pca, data = proportion_metadata, colour="group", shape="group")
 
+t<-proportion_metadata
 
-#PCA of groups: 1(NS1,NS3) and 2(NS2,NS4)
-group1<-proportion_metadata[proportion_metadata$group=="Group1",]
-pca_group1 <- prcomp(group1[ ,c(2:10)])#solo hace pca de columnas con frequencies
-autoplot(pca_group1, data = group1, colour="temp")
-
-group2<-proportion_metadata[proportion_metadata$group=="Group2",]
-pca_group2 <- prcomp(group2[ ,c(2:10)])#solo hace pca de columnas con frequencies
-autoplot(pca_group2, data = group2, colour="temp")
-new<-proportion_metadata[,c(2:10,17:37)]
-
-
-
-###############sur
-pca
-
-
-library(tidyverse)
-
-
-groups <- c("Group1", "Group2")
-groups <- c("Group1")
-# groups <- c("Group2")
-
-Freq <- proportion_metadata[proportion_metadata$group %in% groups, ][,2:10]
-Meta <- proportion_metadata[proportion_metadata$group %in% groups, ][, -(2:10)]
-Meta <- Meta %>%
+strains<- c("ST00101", "ST00154","NS_042g_27F","NS_164C_27F","ST00060","ST00046","ST00143","NS_110C_1_27F","ST00094","ST00109")
+freqs<-t%>%
+  select(all_of(strains))
+meta<-t%>%
+  select(!all_of(strains))%>%
   mutate(hrs = as.numeric(hrs))
 
-Freq.pca <- prcomp(Freq)
-summary(Freq.pca)
+pca <- prcomp(freqs, center = TRUE)
+summary(pca)
 
 
-Dat <- Freq.pca$x %>% as_tibble() %>%
-  bind_cols(Meta)
+p <- pca$x %>%
+  bind_cols(meta)
 
 
-library(ggnewscale)
-Dat %>%
-  ggplot(aes(x = PC1, y = PC2)) +
-  labs(title = "PCA", y = "PC2 (28.95%)", x = "PC1 (36.86%)")+
-  
-
-  
-  geom_point(data = Dat %>% filter(temp == "28"),
-             aes(fill = hrs), shape = 21, size = 4) +
-  scale_fill_gradient(low = "#74add1", high = "#e0f3f8", name = "28°C") + 
- 
-  
-  new_scale_fill() +
-  
-  
-  geom_point(data = Dat %>% filter(temp == "32"),
-             aes(fill = hrs), shape = 21, size = 4) +
-  scale_fill_gradient(low = "#f46d43", high = "#ffffbf", name = "32°C") +
-  
-  geom_point(data = Dat %>% filter(temp == "NA"),
-             fill = "black", shape = 21, size = 4) +
-    
-  theme_classic()
-
-  
-
-Dat %>%
-  mutate(hrs = factor(hrs)) %>%
-  mutate(temp = factor(temp, levels = c("NA", "28", "32"))) %>%
-  ggplot(aes(x = hrs, y = PC2)) +
-  facet_grid(~temp, scales = "free_x", space = "free_x") +
-  geom_boxplot(outlier.color = NA) + 
+#First component of all data is explained by thr two different groups (red and blue)
+ggplot(data = p, aes(x=PC1, y=PC2))+
+  geom_point(aes(color=as.factor(group)))
+ggplot(data = p, aes(x=as.factor(group), y=PC1))+
+  geom_boxplot()+
   geom_point(position = position_jitter(width = 0.2)) +
-  labs( x = "Time (hrs)", y="PC2 (28.95%)") +
-  theme_classic()
+  labs( x = " ()", y="PC (%)") 
 
-
-communities<-c("R1","R2","R3","R4","R5","R6","R7","R8","R9","R10","R11","R12")
-
-##comm
-Dat %>%
-  filter(temp!="NA")%>%
-  mutate(hrs = factor(hrs)) %>%
-  mutate(temp = factor(temp, levels = c( "28", "32"))) %>%
-  mutate(community = factor(community, levels = communities)) %>%
-  ggplot(aes(x = temp, y = PC1)) +
-  facet_grid(~community, scales = "free_x", space = "free_x") +
-  geom_boxplot(outlier.color = NA) + 
+#Second component could be explained by relation time temperature thf we do a separete pca for the groups
+ggplot(data = p, aes(x=as.factor(hrs), y=PC2))+
+  facet_wrap(~temp)+
+  geom_boxplot()+ #do another pca separating by group for cleaner results 
   geom_point(position = position_jitter(width = 0.2)) +
-  labs( x = "Time (hrs)") +
-  theme_classic()
-
-Dat
+  labs( x = " ()", y="PC (%)") 
 
 
 
 
+# thf make a separate pca for each of the two groups 
+freqs_g1 <- freqs %>%
+  bind_cols(meta) %>%
+  filter(group=="Group1")%>%
+  select(all_of(strains))
+freqs_g2 <- freqs %>%
+  bind_cols(meta) %>%
+  filter(group=="Group2")%>%
+  select(all_of(strains))
 
 
-varpart_result <- varpart(Freq, ~ community  , ~ hrs+temp , data = Meta)
-plot(varpart_result)
-summary(varpart_result)
+pca_g1 <- prcomp(freqs_g1, center = TRUE)
+summary(pca_g1)
+pca_g2 <- prcomp(freqs_g2, center = TRUE)
+summary(pca_g2)
 
 
+p_g1 <- pca_g1$x %>%
+  bind_cols(meta%>%
+              filter(group=="Group1"))
+
+p_g2 <- pca_g2$x %>%
+  bind_cols(meta%>%
+              filter(group=="Group2"))
+
+p_g1$temp<-as.factor(p_g1$temp)
+p_g2$temp<-as.factor(p_g2$temp)
 
 
-
-
-
-
-
-que hacer para ppt: 
-  *hacer grafico de baras en boxplot con cada punt que sea una comsint NS 
-  *displayear en ppt PC1 y PC2 con x axis como tiempo, PC1 muestra cambio de media confomre al tiempo 
-  PC2 muestra cambio en varianza conforme al tiempo pero tanbien un ligero aumento en media en 28°C 
-
-
-
-
+#Variation in group 1 (blue), can be explained by temperature
+plot1<-ggplot(data = p_g1%>%
+         filter(!is.na(temp)), aes(x=PC1, y=PC2))+
+  geom_point(aes(color=temp, shape=temp), size=2)+
+  stat_ellipse(geom = "polygon", alpha = 0.2, aes(group = temp, color = temp, fill = temp), type = "norm", size = 0.5) +
+  scale_fill_manual(values = c("28"="#63B8FF", "32"="lightsalmon"), name = "Temperature °C")+
+  scale_color_manual(values = c("28"="#63B8FF", "32"="lightsalmon"), name = "Temperature °C")+
+  scale_shape_manual(values = c("32" = 16, "28" = 17 ), name = "Temperature °C")+
+  labs( x = "PC1 (58.7%)", y="PC2 (19.6%)", title="PCA - Group 1")+
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +  
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") 
   
-  
-  
-  
-  
 
-  
-unifrac
-phyloseq
+plot1
+ggsave(plot1,
+       filename="C:/Users/natal/Documents/LIIGH/results/results_comsint_rhizos/graphs/PCA/group1_temp_pca.png" ,
+       bg="white",  width = 20, height = 14, units = "cm")
 
 
 
-FALTA 
+ggplot(data = p_g1%>%
+         filter(!hrs==0), aes(x=as.factor(temp), y=PC2))+
+  facet_wrap(~hrs)+
+  geom_boxplot()+
+  geom_point(position = position_jitter(width = 0.2)) +
+  labs( x = " temp", y="PC2 (%)") 
 
-yo
-hacer comsints y congelar solo la pstilla sin rna later 
 
-checar
-curvas de crecimiento: crecer alicuota de overnight culture en volumen y tomar cada 30min OD 
-  
-ppt
-intro
-diagrama 
-pca
-barplots promedios entre ns
-efecto temp y efecto cepas
 
-checar para ppt: 
-***ancom-bc que comsints cambian dependiendo de que factiroes? 
-**** capscale
-***cambios cepas por comsint 
+#Some variation in group 2 (red), can be explained by the colonization of few bacteria 
+plot2<-ggplot(data = p_g2%>%
+         filter(!is.na(temp)), aes(x=PC1, y=PC2))+
+  geom_point(aes(color=community))+
+  stat_ellipse(geom = "polygon", alpha = 0.2, aes(group = community, color = community, fill = community), type = "norm", size = 0.5) +
+  labs( x = "PC1 (44.9%)", y="PC2 (28.4%)", title="PCA - Group 2", color = "Community", fill = "Community")+
+  geom_vline(xintercept = 0, linetype = "dashed", color = "black") +  
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") 
+
+plot2
+ggsave(plot2,
+       filename="C:/Users/natal/Documents/LIIGH/results/results_comsint_rhizos/graphs/PCA/group2_community_pca.png" ,
+       bg="white",  width = 20, height = 14, units = "cm")
+
+
+
+
+
+
+
