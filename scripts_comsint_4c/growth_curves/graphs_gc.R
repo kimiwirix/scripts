@@ -6,6 +6,8 @@ library(dplyr)
 library(ggplot2)
 library(pracma)
 library(performance)
+library(ggtext)
+
 
 
 
@@ -43,6 +45,13 @@ write.table(t,
             sep='\t', 
             row.names = FALSE)
 
+
+
+real_names<-c('CH23'='<i>Bacillus altitudinis</i>', 'CH29'='<i>Corynebacterium sp.</i>', 'CH90'='<i>Bacillus atrophaeus</i>',  
+              'CH99'='<i>Staphylococcus arlettae</i>', 'CH111'='<i>Bacillus thuringiensis</i>', 'CH149a'='<i>Micrococcus luteus</i>', 
+              'CH154a'='<i>Staphylococcus shinii</i>', 'CH161d'='<i>Bacillus infantis</i>',  'CH447'='<i>Priestia megaterium</i>', 'CH450'='<i>Metabacillus indicus</i>')
+
+
 #GRAPHS
 #wrapped por temp
 g1<-ggplot(data = t, aes(x = hr, y = `OD real`, colour = Cepa, group = interaction(Cepa,rep, temp, drop = TRUE, sep = "_")))+
@@ -50,18 +59,22 @@ g1<-ggplot(data = t, aes(x = hr, y = `OD real`, colour = Cepa, group = interacti
   facet_wrap(~temp)+
   scale_x_continuous(breaks = seq(0,18, by=2))+
   labs( title = "Growth curve",y=expression("OD"["600nm"]), x = expression("Time"["hrs"]), colour="Strain")+
-  geom_vline(xintercept = 8, colour = "red", linetype = "dashed")
+  geom_vline(xintercept = 10, colour = "red", linetype = "dashed")
 g1
+
 
 #wrapped por cepa 
 g2<-ggplot(data=t, aes(x = hr, y = `OD real`, colour = as.factor(temp), group = interaction(rep, temp, drop = TRUE, sep = "_")))+
   geom_line()+
-  facet_wrap(~Cepa, scales = "free_y")+
+  facet_wrap(~Cepa, scales = "free_y", ncol=5,labeller = as_labeller(real_names))+
   scale_x_continuous(breaks = seq(0,18, by=2))+
   labs( title = "Growth by strain",y=expression("OD"["600nm"]), x = expression("Time"["hrs"]), colour="T(°C)")+
-  geom_vline(xintercept = 8, colour = "red", linetype = "dashed")+
+  geom_vline(xintercept = 10, colour = "red", linetype = "dashed")+
   scale_color_manual(
-    values = c("30"="#63B8FF", "37"="lightsalmon", "42"="indianred3"))  # change colors here
+    values = c("30"="#63B8FF", "37"="lightsalmon", "42"="indianred3"))+  # change colors here
+  theme(strip.text = element_markdown(),                                               
+        plot.title = element_text(hjust = 0.5, vjust = 3, size = 12))            # enables <i></i> formatting
+
 g2
 
 
@@ -70,7 +83,7 @@ g3<-ggplot(data = t, aes(x = hr, y = `OD real`, colour = as.factor(temp),  group
   geom_line()+
   scale_x_continuous(breaks = seq(0,18, by=2))+
   labs( title = "Growth by temperature",y=expression("OD"["600nm"]), x = expression("Time"["hrs"]), colour="T(°C)")+
-  geom_vline(xintercept = 8, colour = "red", linetype = "dashed")+
+  geom_vline(xintercept = 10, colour = "red", linetype = "dashed")+
   scale_color_manual(
     values = c("30"="#63B8FF", "37"="lightsalmon", "42"="indianred3"))  # change colors here
 g3

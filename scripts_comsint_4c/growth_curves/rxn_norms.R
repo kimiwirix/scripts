@@ -11,9 +11,6 @@ t<-read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/indivi
               sep = '\t', 
               header = TRUE)
 
-real_names<-c('CH23'='bACILLUS', 'CH29'='Staph', 'CH90'='Staph',  'CH99'='Staph', 'CH111'='Staph', 'CH149a'='bACILLUS', 'CH154a'='Staph', 'CH161d'='Staph',  'CH447'='Staph', 'CH450'='Staph')
-
-
 #AUC addition and eliminate filas que se repitan 
 t_AUC<-t%>%
   group_by(Cepa, rep, temp)%>%
@@ -48,16 +45,16 @@ r_norm<-ggplot()+
   geom_line(data = t_mean, aes( x = temp, y = mean_AUC, group = Cepa, color=Cepa), 
             linewidth = 1)+
   scale_color_manual(values = colors)+
-  facet_wrap(~Cepa, ncol=10, labeller = as_labeller(real_names))+
+  facet_wrap(~Cepa, ncol=5, labeller = as_labeller(real_names))+
   labs( title = "Reaction norms",y=expression("AUC"), x = expression("Temperature °C"))+
   theme(strip.text = element_markdown(),
         legend.position = "none",                                                # removes the legend
         plot.title = element_text(hjust = 0.5, vjust = 3, size = 12))            # enables <i></i> formatting
 
 
-
+r_norm
 
 
 ggsave(r_norm,
        filename="C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/rxn_norm.png" ,
-       bg="white",  width = 40, height = 6, units = "cm")
+       bg="white",  width = 30, height = 12, units = "cm")
