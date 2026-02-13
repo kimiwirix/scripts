@@ -4,9 +4,9 @@ library(readODS)
 library(tibble)
 library(ggplot2)
 library(dendextend)
+library(dplyr)
 
-
-#id_mat<-read.table("C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/pyani_matrixes/matrix_identity_1.tab" ,sep = "\t", header = TRUE)
+#id_mat<-read.table("C:/Users/natal/Downloads/ani_output_prueba/ANIm_percentage_identity.tab" ,sep = "\t", header = TRUE)
 id_mat<-read.table("C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/pyani_report/matrix_identity_1.tab" ,sep = "\t", header = TRUE)
 
 
@@ -27,7 +27,7 @@ table(cut_tree) #summary of how many organims in each cut part
 cut_tree[cut_tree==1] #which organisms are in part 1
 
 
-png(file="C:/Users/natal/Documents/LIIGH/docs/docs_comsint_4c/parsed_dendrogram.png",
+png(file="C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/parsed_dendogram.png",
     width=32,height=18,units="cm",res=1200)
 
 
@@ -46,5 +46,4 @@ cluster_mat%>%
 mtext("Distance (%)", side = 2, line = 2.5, cex = 1)
 
 dev.off()
-
 

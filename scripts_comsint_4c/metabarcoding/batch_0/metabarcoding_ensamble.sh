@@ -1,49 +1,57 @@
 #!/bin/bash                                                             
-#SBATCH --job-name=ensamble		                                # Job name
+#SBATCH --job-name=ensamble		                                          # Job name
 #SBATCH --chdir=/mnt/data/sur/users/nsaid/4c/metabarcoding/ensambles   	# ruta para guardar todo el output			                                            
 #SBATCH --output=Logs_errors/%j.log        	                            # Output file (%j = Job ID)
-#SBATCH --error=Logs_errors/%j.error    	                            # Error file
-#SBATCH --time=50:00:00           					                    # Time limit (hh:mm:ss)
-#SBATCH --partition=defq         					                    # Partition
-#SBATCH --nodes=1                 					                    # Number of nodes
-#SBATCH --ntasks=1                					                    # Number of tasks (processes)
-#SBATCH --cpus-per-task=2         					                    # CPUs per task
-#SBATCH --mem=80G                  					                    # Memory per node
-                               
+#SBATCH --error=Logs_errors/%j.error    	                              # Error file
+#SBATCH --time=50:00:00           					                            # Time limit (hh:mm:ss)
+#SBATCH --partition=defq         					                              # Partition
+#SBATCH --nodes=1                 					                            # Number of nodes
+#SBATCH --ntasks=1                					                            # Number of tasks (processes)
+#SBATCH --cpus-per-task=2         					                            # CPUs per task
+#SBATCH --mem=80G                  					                            # Memory per node
+
+#NOTE
+#hacer carpeta Logs_errors antes de correr sbatch
+#cambiar SBATCH --chdir= a la ruta que vaya a usar para guardar todo el output	
+
 #info slurm: https://support.lavis.unam.mx/documentation/USING-THE-CLUSTERS/job-scheduling-with-slurm/ 
 
 
 
-#PRIOR
-#hacer carpeta Logs_errors antes de correr sbatch
-#cambiar SBATCH --chdir= a la ruta que vaya a usar para guardar todo el output			                                            
+
+#PRIOR	                                            
 #cambiar nombre de manifest y de references.txt antes de correr programa 
 #cambiar nombre de outputs finales .tsv y .biom dependiendo del análisis
+#Hacer sobre raw data files (ej:NS00173B.raw_2.fastq)
    
 
+#always while working with conda envs 
+eval "$(conda shell.bash hook)" 
 #load modules
-module load anaconda3/2021.05
-source activate /cm/shared/apps/anaconda3/2021.05/envs/qiime2-2021.4
+conda activate qiime2-amplicon-2025.10
 
 #imports references 
 qiime tools import \
   --type 'FeatureData[Sequence]' \
-  --input-path reference_seqs_sangercontigR_trimmed_wo_primers.txt \
+  --input-path reference_seqs_sangercontig_woprimers_wsecondrefs.txt \
   --output-path reference_seqs.qza
 
 # 6. Muestras: importea sequencias a artifacto .qza
-#quitar el .gz de archivos (gunzip -r NS*) y de manifest 
+# dejar el .gz en manifest y en muestras 
+# hacer manifest con echo -e "" > manifestname.tsv and >> para append y no overwrite
 qiime tools import \
   --type 'SampleData[PairedEndSequencesWithQuality]' \
-  --input-path manifest_ensamble.tsv \
+  --input-path manifest_prueba.tsv \
   --output-path paired-end-demux.qza \
   --input-format PairedEndFastqManifestPhred33V2
 
+
 # 7. Muestras: une secuencias R y F
 #in latest versions join-pairs changed to merge-pairs
-qiime vsearch join-pairs \
+qiime vsearch merge-pairs \
  --i-demultiplexed-seqs paired-end-demux.qza \
- --o-joined-sequences paired-end-merged.qza 
+ --o-merged-sequences paired-end-merged.qza \
+ --o-unmerged-sequences unpaired-end-merged.qza
 
 
 # 8. Filtro por q score, trimmea los ends que esten muy degradados 
@@ -85,7 +93,8 @@ qiime tools export \
 --output-path abundance_table_open
 
 # 12. convierte tabla a tsv
-biom convert -i abundance_table_open/feature-table-ensambles.biom \
+# cambiar nombre output
+biom convert -i abundance_table_open/feature-table.biom \
 -o abundance_table_open/feature-table-open-ensambles.tsv --to-tsv
 
 #convertirunmatched sequences a directorio con fasta 
