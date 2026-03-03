@@ -33,7 +33,7 @@ conda activate qiime2-amplicon-2025.10
 #imports references 
 qiime tools import \
   --type 'FeatureData[Sequence]' \
-  --input-path reference_seqs_sangercontig_woprimers_wsecondrefs.txt \
+  --input-path reference_seqs_sangercontigR_trimmed_wo_primers.txt \
   --output-path reference_seqs.qza
 
 # 6. Muestras: importea sequencias a artifacto .qza
@@ -41,7 +41,7 @@ qiime tools import \
 # hacer manifest con echo -e "" > manifestname.tsv and >> para append y no overwrite
 qiime tools import \
   --type 'SampleData[PairedEndSequencesWithQuality]' \
-  --input-path manifest_prueba.tsv \
+  --input-path manifest.tsv \
   --output-path paired-end-demux.qza \
   --input-format PairedEndFastqManifestPhred33V2
 
@@ -102,4 +102,17 @@ qiime tools export \
     --input-path new-references-cr-85.qza \
     --output-path unmatched-sequences
 
+#workflow to get nonchimeric sequence titles
+qiime vsearch uchime-denovo \
+  --i-sequences new-references-cr-85.qza \
+  --i-table table-cr-85.qza \
+  --o-chimeras chimeras.qza \
+  --o-nonchimeras nonchimeras.qza \
+  --o-stats chimera-stats.qza
 
+qiime tools export \
+  --input-path nonchimeras.qza \
+  --output-path abundance_table_open/nonchimeric
+
+#For knowing what kind of artifact is the file
+  #qiime tools peek reference_seqs.qza
