@@ -2,7 +2,7 @@ library(tidyverse)
 library(readODS)
 library(dplyr)
 
-#There were changes in coloration inone batch made on 22.01.26, the 10 13 bottles with medium were tested on absorbance 
+#There were changes in coloration in one batch made on 22.01.26, the 10 13 bottles with medium were tested on absorbance 
 #in different wavelenghts.
 #CONCLUSION: there is no statistical difference between the bottles based on absorbance 
 

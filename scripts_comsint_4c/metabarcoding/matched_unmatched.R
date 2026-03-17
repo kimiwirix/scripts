@@ -1,5 +1,5 @@
 #Calculates from all the comsints the percentage of frequencies corresponding to unmatched and of matched 
-#the calculation was done for 99 perc indetity and 97 by changing the files in the frequency tables 
+#the calculation was done for 99 perc indetity
 
 library(ggplot2)
 library(readODS)
@@ -36,11 +36,10 @@ plot<-ggplot(data = f, aes(x = community_label, y = total_frequency, fill = stat
   theme(plot.title = element_text(hjust = 0.5), 
         axis.text.x = element_text(size = 10, angle = 45, hjust = 1))
 
-
+plot
 ggsave(plot,
        filename="C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/analisis/metabarcoding/batch_0/matched_unmatched.png" ,
        bg="white",  width = 30, height = 14, units = "cm")
-
 
 
 

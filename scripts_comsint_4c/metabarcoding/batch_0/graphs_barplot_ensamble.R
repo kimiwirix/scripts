@@ -45,6 +45,7 @@ p_m<-merge(p, m, by = "community_label")%>%   #mergea metadata con proportion ta
 
 
 #CHECAR QUE ALS QUE ESTÁN SI DEBEN DE ESTAR 
+#se guardó al final como presence 
 ok<-read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_data_collection.ods", sheet = "comsints")%>%
   column_to_rownames(var = "strain")%>%
   t()%>%
@@ -109,5 +110,6 @@ ggsave(plot,
 
 
 
+write.table(ok,file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/metabarcoding/presence.tsv" , na = "NA", append = TRUE, row.names = FALSE, sep = "\t", quote = TRUE)
 
 

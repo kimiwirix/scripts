@@ -9,7 +9,7 @@ library(performance)
 library(tidyverse)
 
 
-t<-read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/individual_strains_growth_curves_NEW_filtered.tsv", 
+t<-read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/individual_strains_growth_curves_filtered.tsv", 
               sep = '\t', 
               header = TRUE)
 t<-t%>%
