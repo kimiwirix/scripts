@@ -17,8 +17,6 @@
 #info slurm: https://support.lavis.unam.mx/documentation/USING-THE-CLUSTERS/job-scheduling-with-slurm/ 
 
 
-
-
 #PRIOR	                                            
 #cambiar nombre de manifest y de references.txt antes de correr programa 
 #cambiar nombre de outputs finales .tsv y .biom dependiendo del análisis
@@ -45,11 +43,18 @@ qiime tools import \
   --output-path paired-end-demux.qza \
   --input-format PairedEndFastqManifestPhred33V2
 
+#quitar primers de reads
+qiime cutadapt trim-paired \
+  --i-demultiplexed-sequences paired-end-demux.qza \
+  --p-front-f CCTACGGGAGGCAGCAG  \
+  --p-front-r GGACTACCAGGGTATCTAAT \
+  --o-trimmed-sequences trimmed-remove-primers.qza
+
 
 # 7. Muestras: une secuencias R y F
 #in latest versions join-pairs changed to merge-pairs
 qiime vsearch merge-pairs \
- --i-demultiplexed-seqs paired-end-demux.qza \
+ --i-demultiplexed-seqs trimmed_remove_primers.qza \
  --o-merged-sequences paired-end-merged.qza \
  --o-unmerged-sequences unpaired-end-merged.qza
 
@@ -77,15 +82,6 @@ qiime vsearch cluster-features-open-reference \
   --o-clustered-sequences rep-seqs-cr-85.qza \
   --o-new-reference-sequences new-references-cr-85.qza
 
-# # 10. closed 
-# qiime vsearch cluster-features-closed-reference \
-#   --i-table dereplicated-table.qza \
-#   --i-sequences dereplicated-seqs.qza \
-#   --i-reference-sequences reference_seqs.qza \
-#   --p-perc-identity 0.97 \
-#   --o-clustered-table table-cr-85.qza \
-#   --o-clustered-sequences rep-seqs-cr-85.qza \
-#   --o-unmatched-sequences unmatched-cr-85.qza
 
 # 11. exportea la tabla de frecuencias 
 qiime tools export \
@@ -96,7 +92,6 @@ qiime tools export \
 # cambiar nombre output
 biom convert -i abundance_table_open/feature-table.biom \
 -o abundance_table_open/feature-table-open-ensambles.tsv --to-tsv
-
 
 # get nonchimeric sequence titles from unmatched seqs
 qiime vsearch uchime-denovo \
@@ -109,6 +104,8 @@ qiime vsearch uchime-denovo \
 qiime tools export \
   --input-path nonchimeras.qza \
   --output-path abundance_table_open/nonchimeric
+
+
 
 #For knowing what kind of artifact is the file
   #qiime tools peek reference_seqs.qza
