@@ -38,10 +38,10 @@ italic <- setNames(lapply(strains, function(x) bquote(italic(.(x)))), strains)
 
 
 
-
 p<-ggplot(data = f, aes(x= timepoint, y = log10(cfus_ml), fill = strain))+
   geom_bar(stat = "identity", position = "dodge")+
-  scale_fill_manual(values =custom_colors ) +
+  scale_fill_manual(values =custom_colors,
+                    labels=italic) +
   facet_wrap(~community, ncol=1) +
   geom_vline(
     xintercept = seq(1.5, length(unique(f$timepoint)) - 0.5, 1),
@@ -50,7 +50,6 @@ p<-ggplot(data = f, aes(x= timepoint, y = log10(cfus_ml), fill = strain))+
   theme(
     panel.grid.major.x = element_blank(),
     plot.title = element_text(hjust = 0.5, vjust = 3, size = 12))
-
 
 
 

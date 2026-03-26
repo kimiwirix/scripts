@@ -6,9 +6,10 @@
   4. tests_shakers
 
 ### metabarcoding
-  1. chimeras_removal: en cluster meto un.sh que remueva las chimeras de la lista de unmatched y me da resultados. Se appendexeó en metabarcoding ensamble al final. Este script remueve la lista de unmathced seqs que son chimeras de la frequency table. 
-  2. matched_unmatched: plots the matched and unmatched  
-  3. v4_trimming: trimms v4 region to use in qiime 
+  1. v4_trimming: trimms v4 region to use in qiime 
+  2. chimeras_removal: en cluster meto un.sh que remueva las chimeras de la lista de unmatched y me da resultados. Se appendexeó en metabarcoding ensamble al final. Este script remueve la lista de unmathced seqs que son chimeras de la frequency table. 
+  3. matched_unmatched: plots the matched and unmatched  
+  4. nonchimeric_fasta_for_taxa: la asignacion de taxonomia de los unmatched-nonchimeric se estaba tardando año plt se elimiaron todas los secuencias que tuvieran menos de 50 reads en unmatched para correr nonchimeric_unmatched_taxa.sh en cluster 
   * batch_0:
     1. graphs_barplot_ensamble:
     2. metabarcoding_ensamble

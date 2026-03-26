@@ -3,7 +3,7 @@
 #SBATCH --chdir=/mnt/data/sur/users/nsaid/4c/metabarcoding/ensambles   	# ruta para guardar todo el output			                                            
 #SBATCH --output=Logs_errors/%j.log        	                            # Output file (%j = Job ID)
 #SBATCH --error=Logs_errors/%j.error    	                              # Error file
-#SBATCH --time=50:00:00           					                            # Time limit (hh:mm:ss)
+#SBATCH --time=500:00:00           					                            # Time limit (hh:mm:ss)
 #SBATCH --partition=defq         					                              # Partition
 #SBATCH --nodes=1                 					                            # Number of nodes
 #SBATCH --ntasks=1                					                            # Number of tasks (processes)
@@ -97,12 +97,8 @@ qiime tools export \
 biom convert -i abundance_table_open/feature-table.biom \
 -o abundance_table_open/feature-table-open-ensambles.tsv --to-tsv
 
-#convertirunmatched sequences a directorio con fasta 
-qiime tools export \
-    --input-path new-references-cr-85.qza \
-    --output-path unmatched-sequences
 
-#workflow to get nonchimeric sequence titles
+# get nonchimeric sequence titles from unmatched seqs
 qiime vsearch uchime-denovo \
   --i-sequences new-references-cr-85.qza \
   --i-table table-cr-85.qza \

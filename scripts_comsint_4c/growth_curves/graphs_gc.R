@@ -11,8 +11,8 @@ library(ggtext)
 
 
 
-file<-"C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/individual_strains_growth_curves_NEW.ods"
-sheets<-ods_sheets("C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/individual_strains_growth_curves_NEW.ods")
+file<-"C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/individual_strains_growth_curves.ods"
+sheets<-ods_sheets("C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/individual_strains_growth_curves.ods")
 ch<-sheets[grepl("^CH", sheets)]
 
 
@@ -69,7 +69,7 @@ g2<-ggplot(data=t, aes(x = hr, y = `OD real`, colour = as.factor(temp), group = 
   facet_wrap(~Cepa, scales = "free_y", ncol=5,labeller = as_labeller(real_names))+
   scale_x_continuous(breaks = seq(0,18, by=2))+
   labs( title = "Growth by strain",y=expression("OD"["600nm"]), x = expression("Time"["hrs"]), colour="T(°C)")+
-  geom_vline(xintercept = 10, colour = "red", linetype = "dashed")+
+  geom_vline(xintercept = 12, colour = "red", linetype = "dashed")+
   scale_color_manual(
     values = c("30"="#63B8FF", "37"="lightsalmon", "42"="indianred3"))+  # change colors here
   theme(strip.text = element_markdown(),                                               
@@ -83,7 +83,7 @@ g3<-ggplot(data = t, aes(x = hr, y = `OD real`, colour = as.factor(temp),  group
   geom_line()+
   scale_x_continuous(breaks = seq(0,18, by=2))+
   labs( title = "Growth by temperature",y=expression("OD"["600nm"]), x = expression("Time"["hrs"]), colour="T(°C)")+
-  geom_vline(xintercept = 10, colour = "red", linetype = "dashed")+
+  geom_vline(xintercept = 12, colour = "red", linetype = "dashed")+
   scale_color_manual(
     values = c("30"="#63B8FF", "37"="lightsalmon", "42"="indianred3"))  # change colors here
 g3
@@ -93,7 +93,7 @@ ggsave(g1,
        filename="C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/individual_growth_curve.png" ,
        bg="white",  width = 30, height = 14, units = "cm")
 ggsave(g2,
-       filename="C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/individual_growth_curve_bystrain.png" ,
+       filename="C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/gc_and_rxnnorm/individual_growth_curve_bystrain.png" ,
        bg="white",  width = 30, height = 14, units = "cm")
 ggsave(g3,
        filename="C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/individual_growth_curve_bytemp.png" ,
