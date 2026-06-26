@@ -40,7 +40,7 @@ head(t)
 #export metadata info to upload in cluster shared_data
 #ultimate filtered table with the useful data 
 write.table(t, 
-            file='C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/individual_strains_growth_curves_NEW_filtered.tsv', 
+            file='C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/individual_strains_growth_curves_filtered.tsv', 
             quote=FALSE, 
             sep='\t', 
             row.names = FALSE)

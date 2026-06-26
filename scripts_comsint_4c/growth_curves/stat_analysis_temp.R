@@ -7,7 +7,7 @@ library(pracma)
 library(performance)
 
 
-t<-read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/individual_strains_growth_curves_NEW_filtered.tsv", 
+t<-read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/individual_strains_growth_curves_filtered.tsv", 
            sep = '\t', 
            header = TRUE)
 
@@ -24,7 +24,7 @@ t_AUC<-t%>%
 
 t_AUC$temp<-as.factor(t_AUC$temp)  
 
-strains <- c("CH23","CH29" ,"CH90", "CH99", "CH111", "CH149a", "CH154a", "CH161d" ,"CH447","CH450")
+strains <- c("CH23","CH29" ,"CH90", "CH99b", "CH111", "CH149a", "CH154a", "CH161d" ,"CH447","CH450")
 results<-data.frame()
 
 
@@ -50,7 +50,6 @@ results
 #Few (3) have a positive effect (signifficantly) from 30 to 37 
 #More (6) have different effects (signifficantly) when compared from 30 to 42
 #Overall (anova) temperature has a significant role in the growth of (8) strains 
-
 
 
 

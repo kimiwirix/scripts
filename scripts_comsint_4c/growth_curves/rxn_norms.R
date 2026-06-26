@@ -5,6 +5,7 @@ library(ggplot2)
 library(pracma)
 library(performance)
 library(ggtext)
+library(ggsignif)
 
 
 t<-read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/individual_strains_growth_curves_filtered.tsv", 
@@ -48,6 +49,8 @@ custom_colors <- c("Bacillus altitudinis"="#ff0000ff", "Corynebacterium sp."="#c
 strains<-c("Bacillus altitudinis", "Corynebacterium sp.", "Bacillus atrophaeus", "Staphylococcus arlettae", "Bacillus thuringiensis","Micrococcus luteus", "Staphylococcus shinii", "Bacillus infantis", "Priestia megaterium", "Metabacillus indicus")
 italic <- setNames(paste0("italic(\"", strains, "\")"), strains)
 
+
+
 #plot
 r_norm<-ggplot()+
   geom_point(data=t_AUC,aes( x = temp, y = AUC, group = rep), colour="peachpuff4")+
@@ -57,11 +60,46 @@ r_norm<-ggplot()+
   facet_wrap(~Cepa, ncol = 5, labeller = as_labeller(italic, label_parsed))+
   labs( title = "Reaction norms",y=expression("AUC"), x = expression("Temperature °C"))+
   theme(legend.position = "none",                                            
-        plot.title = element_text(hjust = 0.5, vjust = 3, size = 12))          
-
+        plot.title = element_text(hjust = 0.5, vjust = 3, size = 12))   +
+  geom_signif(
+    data = subset(t_AUC, Cepa %in% c("Bacillus thuringiensis")),
+    aes(x = temp, y = AUC),
+    comparisons = list(c("30", "42")), annotations="*",
+    map_signif_level = TRUE
+  )+
+  geom_signif(
+    data = subset(t_AUC, Cepa %in% c("Bacillus atrophaeus", "Bacillus altitudinis")),
+    aes(x = temp, y = AUC),
+    comparisons = list(c("30", "37")), annotations="*",
+    map_signif_level = TRUE
+  )+
+  geom_signif(
+    data = subset(t_AUC, Cepa %in% c("Corynebacterium sp.", "Bacillus atrophaeus", "Bacillus infantis")),
+    aes(x = temp, y = AUC),
+    comparisons = list(c("30", "42")), annotations="**",
+    map_signif_level = TRUE
+  )+
+  geom_signif(
+    data = subset(t_AUC, Cepa %in% c("Micrococcus luteus")),
+    aes(x = temp, y = AUC),
+    comparisons = list(c("30", "37")), annotations="**",
+    map_signif_level = TRUE
+  )+
+  geom_signif(
+    data = subset(t_AUC, Cepa %in% c("Staphylococcus shinii", "Staphylococcus arlettae")),
+    aes(x = temp, y = AUC),
+    comparisons = list(c("30", "42")), annotations="***",
+    map_signif_level = TRUE
+  )
+  
 r_norm
+
 
 
 ggsave(r_norm,
        filename="C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/gc_and_rxnnorm/rxn_norm.png" ,
-       bg="white",  width = 30, height = 12, units = "cm")
+       bg="white",  width = 40, height = 21, units = "cm")
+
+
+
+

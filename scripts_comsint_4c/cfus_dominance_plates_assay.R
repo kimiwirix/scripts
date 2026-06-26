@@ -36,8 +36,7 @@ strains<-c("Bacillus altitudinis", "Corynebacterium sp.", "Bacillus atrophaeus",
 italic <- setNames(lapply(strains, function(x) bquote(italic(.(x)))), strains)
 
 
-
-
+#plot with suspected numeber of cfus by counts on plate
 p<-ggplot(data = f, aes(x= timepoint, y = log10(cfus_ml), fill = strain))+
   geom_bar(stat = "identity", position = "dodge")+
   scale_fill_manual(values =custom_colors,
@@ -52,11 +51,34 @@ p<-ggplot(data = f, aes(x= timepoint, y = log10(cfus_ml), fill = strain))+
     plot.title = element_text(hjust = 0.5, vjust = 3, size = 12))
 
 
-
 ggsave(p,
        filename="C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/analisis/cfus_dominance_plates_assay.png" ,
        bg="white",  width = 30, height = 14, units = "cm")
 
 
+#plot with numero de fenotipos diferentes
+f1<-c1%>%
+  bind_rows(c17,c31)%>%
+  filter(!is.na(CFUs))%>%
+  group_by(community, timepoint)%>%
+  summarise(phenotypes = n_distinct(strain)) %>%   # Now summarise with unique elements per group
+  ungroup()
 
+
+p1<-ggplot(data = f1, aes(x= timepoint, y = phenotypes))+
+  geom_point()+
+  geom_bar(stat = "identity", position = "dodge", fill="skyblue4")+
+  facet_wrap(~community, ncol=1) +
+  geom_vline(
+    xintercept = seq(1.5, length(unique(f$timepoint)) - 0.5, 1),
+    linetype = "dashed",color = "grey70")+
+  scale_y_continuous(limits=c(0,5), breaks=seq(0,5, by = 1))+
+  labs(title="Number of phenotypes observed per community")+
+  theme(
+    panel.grid.major.x = element_blank(),
+    plot.title = element_text(hjust = 0.5, vjust = 3, size = 12))
+
+ggsave(p1,
+       filename="C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/analisis/cfus_dominance_phenotypes_observed.png" ,
+       bg="white",  width = 14, height = 14, units = "cm")
 
