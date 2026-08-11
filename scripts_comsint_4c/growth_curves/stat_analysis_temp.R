@@ -1,4 +1,5 @@
 #stat analysis to see if the temperature has a significant effect on the individual growth 
+# the results fromthis test will be included in the graph rxn_norms.R as * for significance
 #conclusiones at the end 
 
 library(dplyr)

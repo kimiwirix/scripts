@@ -1,3 +1,8 @@
+#+ se probaron tres diferentes kits para ver si todos tenían la capacidad 
+#+ para detectar todas las cepas. 
+#+ 
+#+ CONCLUSION: Nos quedamos con QIAGEN Powersoil
+
 library(readODS)
 library(reshape2)
 library(ggplot2)

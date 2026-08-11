@@ -35,7 +35,7 @@ b$community <- factor(b$community, levels = communities)
 #+ temperaturas con su réplica 
 
 p <- ggplot()+
-  geom_line(data = b, aes(x = hrs, y = Fragmentos_16S_ml  , colour = as.factor(temp), group = interaction(community, repbio, temp), linetype=as.factor(repbio)), linewidth=0.8)+
+  geom_line(data = b, aes(x = hrs, y = log10(Fragmentos_16S_ml)  , colour = as.factor(temp), group = interaction(community, repbio, temp), linetype=as.factor(repbio)), linewidth=0.8)+
   facet_wrap(~community)+
   scale_color_manual(values = c("30"="#63B8FF", "37"="lightsalmon", "42"="indianred3"))+
   labs(title = "Community growth in temperature treatments", 

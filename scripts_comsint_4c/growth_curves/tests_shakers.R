@@ -8,10 +8,10 @@ library(performance)
 
 
 #TESTS SHAKERS
-t<-read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/individual_strains_growth_curves_NEW_filtered.tsv", 
+t<-read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/individual_strains_growth_curves_filtered.tsv", 
               sep = '\t', 
               header = TRUE)
-data_shakers <-read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/individual_strains_growth_curves_NEW.ods", sheet = "shakers_exp_2")
+data_shakers <-read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/individual_strains_growth_curves.ods", sheet = "shakers_exp_2")
 data_shakers$`OD real`[data_shakers$`OD real` == 0.620 & data_shakers$Incubator=="S_2"] <- NA #remove 
 
 

@@ -20,7 +20,7 @@ matched<-read.table(file = 'C:/Users/natal/Documents/LIIGH/results/results_comsi
   filter(strain %in% strain_ids)%>%
   column_to_rownames(var = 'strain')
 
-
+matched
 
 #makes proportion table
 proportion_table<-apply(matched, 2, function(x) x/sum(x)) 
@@ -30,13 +30,12 @@ p<-proportion_table %>%
 p$community_label<-rownames(p)
 
 
-
-
+p
 
 #METADATA 
 m<-read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_dbs/CC_data_collection.ods", sheet = "ensamble")%>%
-  filter(repbio=="A")%>%
-  select(!c(notes, repbio, date))
+  filter(ensamble=="A")%>%
+  select(!c(notes, date, ensamble))
 
 
 #proportion and metadata together
@@ -46,28 +45,20 @@ p_m<-merge(p, m, by = "community_label")%>%   #mergea metadata con proportion ta
 
 #CHECAR QUE ALS QUE ESTÁN SI DEBEN DE ESTAR 
 #se guardó al final como presence 
-ok<-read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_dbs/CC_data_collection.ods", sheet = "comsints")%>%
-  column_to_rownames(var = "strain")%>%
-  t()%>%
-  as.data.frame()%>%
-  rownames_to_column(var = "community") %>%
-  melt(variable.name="strain", value.name = "presence")%>%
-  mutate(presence = ifelse(is.na (presence), 0, presence))
-  
-
-
+s <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_dbs/strains_in_comsints.tsv",
+                       header = TRUE)
 
 
 #reorganiza tabla por strains y su value de relative abundance 
-df<- merge(p_m, ok, by = c('community','strain'))%>% #mergea metadata con proportion table por el label name 
+df<- merge(p_m, s, by = c('community','strain'))%>% #mergea metadata con proportion table por el label name 
   mutate(strain = recode(strain,
                          "CH23"  = "Bacillus altitudinis",
                          "CH29"  = "Corynebacterium sp.",
-                         "CH90"  = "Bacillus atrophaeus",
                          "CH99b" = "Staphylococcus arlettae",
                          "CH111" = "Bacillus thuringiensis",
-                         "CH149a"= "Micrococcus luteus",
                          "CH154a"= "Staphylococcus shinii",
+                         "CH90"  = "Bacillus atrophaeus",
+                         "CH149a"= "Micrococcus luteus",
                          "CH161d"= "Bacillus infantis",
                          "CH447" = "Priestia megaterium",
                          "CH450" = "Metabacillus indicus"))%>%
@@ -80,9 +71,8 @@ df<- merge(p_m, ok, by = c('community','strain'))%>% #mergea metadata con propor
 
 
 communities<-c("C1","C2","C3","C4","C5","C6","C7","C8","C9","C10","C11","C12","C13","C14","C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","C27","C28","C29","C30","C31","C32")
-custom_colors <- c("Bacillus altitudinis"="#ff0000ff", "Corynebacterium sp."="#cd2626ff", "Bacillus atrophaeus"="#4682b4ff", "Staphylococcus arlettae"="#fcae91ff", "Bacillus thuringiensis"="#8c2424ff",
-                   "Micrococcus luteus"="#00e5eeff", "Staphylococcus shinii"="#ef6d53ff", "Bacillus infantis"="#08519cff", "Priestia megaterium"="#273a3eff", "Metabacillus indicus"="#bdd7e7ff" )
-strains<-c("Bacillus altitudinis", "Corynebacterium sp.", "Bacillus atrophaeus", "Staphylococcus arlettae", "Bacillus thuringiensis","Micrococcus luteus", "Staphylococcus shinii", "Bacillus infantis", "Priestia megaterium", "Metabacillus indicus")
+custom_colors <- c("Bacillus altitudinis"="#273a3eff", "Corynebacterium sp."="#08519cff",  "Staphylococcus arlettae"="#00e5eeff", "Bacillus thuringiensis"="#4682b4ff",  "Staphylococcus shinii"="#bdd7e7ff", "Bacillus atrophaeus"="#8c2424ff", "Micrococcus luteus"="#cd2626ff", "Bacillus infantis"="#ff0000ff", "Priestia megaterium"="#ef6d53ff", "Metabacillus indicus"="#fcae91ff" )
+strains<-c("Bacillus altitudinis", "Corynebacterium sp.", "Staphylococcus arlettae", "Bacillus thuringiensis", "Staphylococcus shinii", "Bacillus atrophaeus",  "Micrococcus luteus",  "Bacillus infantis", "Priestia megaterium", "Metabacillus indicus")
 italic <- setNames(lapply(strains, function(x) bquote(italic(.(x)))), strains)
 
 
@@ -92,12 +82,11 @@ df$community <- factor(df$community, levels = communities) # Custom order
 
 
 
-
 plot<-ggplot(data = df, aes(x = community, y = rel_abd, fill =contamination, group=strain))+ #just value if dont want to plot averages
-  geom_bar(position = "stack", stat = "identity")+
+  geom_bar(position = "stack", stat = "identity") +
   labs(title = "Ensamble composition",
        y = "Abundance", x = "Community", fill="Strain") + 
-  scale_fill_manual(values = c(custom_colors, Contamination="black"),
+  scale_fill_manual(values = c(custom_colors, Contamination="#FFED29"),
                     labels = italic)+
   scale_y_continuous(breaks = seq(0, 1, by = 0.2))+
   theme(plot.title = element_text(hjust = 0.5))
@@ -110,6 +99,5 @@ ggsave(plot,
 
 
 
-write.table(ok,file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/metabarcoding/presence.tsv" , na = "NA", append = TRUE, row.names = FALSE, sep = "\t", quote = TRUE)
 
 

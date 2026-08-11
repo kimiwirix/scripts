@@ -31,7 +31,7 @@ f<-c1%>%
                          "CH450" = "Metabacillus indicus"))
 
 
-custom_colors <- c("Bacillus altitudinis"="#ff0000ff", "Corynebacterium sp."="#cd2626ff", "Bacillus atrophaeus"="#fcae91ff", "Staphylococcus arlettae"="#4682b4ff", "Bacillus thuringiensis"="#8c2424ff","Micrococcus luteus"="#00e5eeff", "Staphylococcus shinii"="#ef6d53ff", "Bacillus infantis"="#08519cff", "Priestia megaterium"="#273a3eff", "Metabacillus indicus"="#bdd7e7ff" )
+custom_colors <- c("Bacillus altitudinis"="#273a3eff", "Corynebacterium sp."="#08519cff", "Bacillus atrophaeus"="#8c2424ff", "Staphylococcus arlettae"="#00e5eeff", "Bacillus thuringiensis"="#4682b4ff","Micrococcus luteus"="#cd2626ff", "Staphylococcus shinii"="#bdd7e7ff", "Bacillus infantis"="#ff0000ff", "Priestia megaterium"="#ef6d53ff", "Metabacillus indicus"="#fcae91ff" )
 strains<-c("Bacillus altitudinis", "Corynebacterium sp.", "Bacillus atrophaeus", "Staphylococcus arlettae", "Bacillus thuringiensis","Micrococcus luteus", "Staphylococcus shinii", "Bacillus infantis", "Priestia megaterium", "Metabacillus indicus")
 italic <- setNames(lapply(strains, function(x) bquote(italic(.(x)))), strains)
 
@@ -50,7 +50,7 @@ p<-ggplot(data = f, aes(x= timepoint, y = log10(cfus_ml), fill = strain))+
     panel.grid.major.x = element_blank(),
     plot.title = element_text(hjust = 0.5, vjust = 3, size = 12))
 
-
+p
 ggsave(p,
        filename="C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/analisis/cfus_dominance_plates_assay.png" ,
        bg="white",  width = 30, height = 14, units = "cm")

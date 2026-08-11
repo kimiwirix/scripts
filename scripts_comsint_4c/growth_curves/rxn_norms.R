@@ -44,18 +44,20 @@ t_mean <- t_AUC %>%
 
 
 communities<-c("C1","C2","C3","C4","C5","C6","C7","C8","C9","C10","C11","C12","C13","C14","C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","C27","C28","C29","C30","C31","C32")
-custom_colors <- c("Bacillus altitudinis"="#ff0000ff", "Corynebacterium sp."="#cd2626ff", "Bacillus atrophaeus"="#fcae91ff", "Staphylococcus arlettae"="#4682b4ff", "Bacillus thuringiensis"="#8c2424ff",
-                   "Micrococcus luteus"="#00e5eeff", "Staphylococcus shinii"="#ef6d53ff", "Bacillus infantis"="#08519cff", "Priestia megaterium"="#273a3eff", "Metabacillus indicus"="#bdd7e7ff" )
-strains<-c("Bacillus altitudinis", "Corynebacterium sp.", "Bacillus atrophaeus", "Staphylococcus arlettae", "Bacillus thuringiensis","Micrococcus luteus", "Staphylococcus shinii", "Bacillus infantis", "Priestia megaterium", "Metabacillus indicus")
+custom_colors <- c("Bacillus altitudinis"="#273a3eff", "Corynebacterium sp."="#08519cff",  "Staphylococcus arlettae"="#00e5eeff", "Bacillus thuringiensis"="#4682b4ff",  "Staphylococcus shinii"="#bdd7e7ff", "Bacillus atrophaeus"="#8c2424ff", "Micrococcus luteus"="#cd2626ff", "Bacillus infantis"="#ff0000ff", "Priestia megaterium"="#ef6d53ff", "Metabacillus indicus"="#fcae91ff" )
+strains<-c("Bacillus altitudinis", "Corynebacterium sp.", "Staphylococcus arlettae", "Bacillus thuringiensis", "Staphylococcus shinii", "Bacillus atrophaeus",  "Micrococcus luteus",  "Bacillus infantis", "Priestia megaterium", "Metabacillus indicus")
 italic <- setNames(paste0("italic(\"", strains, "\")"), strains)
 
+
+t_AUC$Cepa  <- factor(t_AUC$Cepa, levels = strains)
+t_mean$Cepa <- factor(t_mean$Cepa, levels = strains)
 
 
 #plot
 r_norm<-ggplot()+
   geom_point(data=t_AUC,aes( x = temp, y = AUC, group = rep), colour="peachpuff4")+
   geom_line(data = t_mean, aes( x = temp, y = mean_AUC, group = Cepa, color=Cepa), 
-            linewidth = 1)+
+            linewidth = 1.5)+
   scale_color_manual(values = custom_colors)+
   facet_wrap(~Cepa, ncol = 5, labeller = as_labeller(italic, label_parsed))+
   labs( title = "Reaction norms",y=expression("AUC"), x = expression("Temperature °C"))+
@@ -76,7 +78,7 @@ r_norm<-ggplot()+
   geom_signif(
     data = subset(t_AUC, Cepa %in% c("Corynebacterium sp.", "Bacillus atrophaeus", "Bacillus infantis")),
     aes(x = temp, y = AUC),
-    comparisons = list(c("30", "42")), annotations="**",
+    comparisons = list(c("30", "42")), annotations="***",
     map_signif_level = TRUE
   )+
   geom_signif(
@@ -102,4 +104,19 @@ ggsave(r_norm,
 
 
 
+#+ Descarga de df t_AUC y t_mean para usar en graficas en donde se hace la 
+#+ comparación de las rxn norms de la comunidad con las rxn norms de las cepas 
+#+ que componen la comunidad 
+
+write.table(t_AUC, 
+            file='C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/gc_and_rxnnorm/AUC_indiv_strains.tsv', 
+            quote=FALSE, 
+            sep='\t', 
+            row.names = FALSE)
+
+write.table(t_mean, 
+            file='C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/gc_and_rxnnorm/AUC_mean_indiv_strains.tsv', 
+            quote=FALSE, 
+            sep='\t', 
+            row.names = FALSE)
 

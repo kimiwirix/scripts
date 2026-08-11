@@ -1,6 +1,5 @@
 #+ CORRELATION between od measurmentes and qPCR measurements 
 
-
 library(readODS)
 library(dplyr)
 library(tidyr)
@@ -8,7 +7,6 @@ library(pracma)
 library(ggplot2)
 library(ggpmisc)
 library(cowplot)
-
 
 
 
@@ -61,12 +59,10 @@ correlation
 
 
 p <- ggplot()+
-  geom_point(data = n, aes(x = OD_real, y = log10(Fragmentos_16S_ml), colour=as.factor(temp))) +
+  geom_point(data = n, aes(x = OD_real, y = log10(Fragmentos_16S_ml), colour=as.factor(timepoint))) +
   stat_smooth(data=n, aes(x = OD_real, y = log10(Fragmentos_16S_ml )), method = 'lm', formula = y~x, inherit.aes = FALSE)+
   stat_correlation(data=n, aes(x = OD_real, y = log10(Fragmentos_16S_ml )), inherit.aes = FALSE)+
-  labs (title = expression ("Correlation between 16S fragments/ml and OD"["600nm"]),
-    y="16S/ml",
-    color="Timepoint")
+  labs (title = expression ("Correlation between 16S fragments/ml and OD"["600nm"]))
 
 
 
@@ -76,16 +72,5 @@ p
 ggsave(p,
        filename="C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/analisis/qPCR/correlations_qpcr_and_OD.png" ,
        bg="white",  width = 50, height = 21, units = "cm")
-
-
-
-
-
-
-
-
-
-
-
 
 

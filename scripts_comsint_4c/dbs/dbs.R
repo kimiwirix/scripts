@@ -1,4 +1,59 @@
-#+ MASTER DATABASES FROM ODs, QPCRs AND METADATA
+#+ MASTER DATABASES FROM 
+#+ GC
+#+ ODs
+#+ QPCRs
+#+ METADATA
+#+ STRAINS IN COMSINTS
+
+
+#+ -----------------------------------------------------------------------------
+#+ Master database of GC 
+
+library(readODS)
+library(dplyr)
+
+library(ggplot2)
+library(pracma)
+library(performance)
+library(ggtext)
+
+
+file<-"C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/individual_strains_growth_curves.ods"
+sheets<-ods_sheets("C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/individual_strains_growth_curves.ods")
+ch<-sheets[grepl("^CH", sheets)]
+
+
+
+t<-lapply(ch, function(ch_sheet){ #all sheets that start with CH in one tibble  
+  read_ods(file, sheet = ch_sheet)
+})%>%
+  bind_rows()%>%
+  filter(!is.na(`OD real`)) %>% #filters rows I put as separation between temps in ods 
+  filter(!is.na(`fecha`))
+
+
+#+ Remove due to shakers inconsistencies and in case of CH29 due to contamination 
+#+ and in 07/02/26 4 biological replicates for ch29 were done again
+
+t<-t%>% 
+  filter(!(
+    rep == 1 & Incubator =="B_2" |
+      rep == 2 & Incubator =="B_2" |
+      rep == 3 & Incubator =="B_2" ))%>%
+  filter(!(Cepa == 'CH29' & rep %in% c(1,2,3,4,5,6,7)))
+
+
+
+#+ export metadata info to upload in cluster shared_data
+#+ ultimate filtered table with the useful data
+ 
+write.table(t, 
+            file='C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/individual_strains_growth_curves_filtered.tsv', 
+            quote=FALSE, 
+            sep='\t', 
+            row.names = FALSE)
+
+
 
 #+ -----------------------------------------------------------------------------
 #+ Master database of ODs from experiments 
@@ -83,12 +138,13 @@ correlation <- q %>%
     cor_B_C = cor(B_Fragmentos_16S_mL, C_Fragmentos_16S_ml, method = 'pearson'),
     mean_cor = mean(c(cor_A_B, cor_A_C, cor_B_C), na.rm = TRUE)
   )
-
+correlation
 
 b <- q %>%
   rowwise()%>%
   mutate(Fragmentos_16S_ml = mean(c(A_Fragmentos_16S_mL,B_Fragmentos_16S_mL,C_Fragmentos_16S_ml)))%>%
-  select(!c(A_Fragmentos_16S_mL, B_Fragmentos_16S_mL, C_Fragmentos_16S_ml))
+  select(!c(A_Fragmentos_16S_mL, B_Fragmentos_16S_mL, C_Fragmentos_16S_ml, notas))
+  filter(!(label_final=="CC0240XY"))
 
 
 write.table(b, 
@@ -124,3 +180,69 @@ write.table(b,
             quote=FALSE, 
             sep='\t', 
             row.names = TRUE)
+
+
+
+
+
+#+ -----------------------------------------------------------------------------
+#+ db of which strains are in which community taken from the CC data collection
+#+ file
+
+library(readODS)
+library(dplyr)
+library(tidyr)
+library(reshape2)
+library(tibble)
+
+comm <- read_ods(path ="C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_dbs/CC_data_collection.ods", sheet = "comsints" )
+communities<-c("C1","C2","C3","C4","C5","C6","C7","C8","C9","C10","C11","C12","C13","C14","C15","C16","C17","C18","C19","C20","C21","C22","C23","C24","C25","C26","C27","C28","C29","C30","C31","C32")
+
+
+p <- comm %>%
+  column_to_rownames(var = "strain")%>%
+  t()%>%
+  as.data.frame()%>%
+  rownames_to_column(var = "community")%>%
+  melt(variable.name="strain", value.name = "presence")%>%
+  mutate(presence = ifelse(is.na (presence), 0, presence))%>%
+  mutate(real_name = recode(strain,
+                       "CH23"  = "Bacillus altitudinis",
+                       "CH29"  = "Corynebacterium sp.",
+                       "CH90"  = "Bacillus atrophaeus",
+                       "CH99b" = "Staphylococcus arlettae",
+                       "CH111" = "Bacillus thuringiensis",
+                       "CH149a"= "Micrococcus luteus",
+                       "CH154a"= "Staphylococcus shinii",
+                       "CH161d"= "Bacillus infantis",
+                       "CH447" = "Priestia megaterium",
+                       "CH450" = "Metabacillus indicus")) %>%
+  arrange(factor(community, levels = communities))
+
+
+p
+write.table( p,
+             file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_dbs/strains_in_comsints.tsv" , 
+             na = "NA",
+             row.names = FALSE,
+             col.names = TRUE,
+             sep = "\t", 
+             quote = TRUE)
+
+
+
+#+ -----------------------------------------------------------------------------
+#+ Ultimate color guide for strains and temperature colors.
+#+ 
+
+
+custom_colors <- c("Bacillus altitudinis"="#273a3eff", "Corynebacterium sp."="#08519cff",  "Staphylococcus arlettae"="#00e5eeff", "Bacillus thuringiensis"="#4682b4ff",  "Staphylococcus shinii"="#bdd7e7ff", "Bacillus atrophaeus"="#8c2424ff", "Micrococcus luteus"="#cd2626ff", "Bacillus infantis"="#ff0000ff", "Priestia megaterium"="#ef6d53ff", "Metabacillus indicus"="#fcae91ff" )
+custom_colors <- c("CH23"="#273a3eff", "CH29"="#08519cff",  "CH99b"="#00e5eeff", "CH111"="#4682b4ff",  "CH154a"="#bdd7e7ff", "CH90"="#8c2424ff", "CH149a"="#cd2626ff", "CH161d"="#ff0000ff", "CH447"="#ef6d53ff", "CH450"="#fcae91ff" )
+temp_colors <-  c("30"="#63B8FF", "37"="lightsalmon", "42"="indianred3")
+strains<-c("Bacillus altitudinis", "Corynebacterium sp.", "Staphylococcus arlettae", "Bacillus thuringiensis", "Staphylococcus shinii", "Bacillus atrophaeus",  "Micrococcus luteus",  "Bacillus infantis", "Priestia megaterium", "Metabacillus indicus")
+real_names<-c('CH23'='<i>Bacillus altitudinis</i>', 'CH29'='<i>Corynebacterium sp.</i>', 'CH90'='<i>Bacillus atrophaeus</i>', 'CH99b'='<i>Staphylococcus arlettae</i>', 'CH111'='<i>Bacillus thuringiensis</i>', 'CH149a'='<i>Micrococcus luteus</i>', 'CH154a'='<i>Staphylococcus shinii</i>', 'CH161d'='<i>Bacillus infantis</i>',  'CH447'='<i>Priestia megaterium</i>', 'CH450'='<i>Metabacillus indicus</i>')
+
+
+
+
+

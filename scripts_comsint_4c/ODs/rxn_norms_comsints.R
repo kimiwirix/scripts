@@ -84,8 +84,8 @@ ggsave(rxn_norm_1,
 
 rxn_norm_2 <- ggplot()+
         geom_point(data = b_AUC, aes(x=temp, y=AUC, group = repbio), colour="peachpuff4")+
-        geom_line(data= b_AUC, aes(x=temp, y=AUC, group = repbio, colour=as.factor(repbio)), linewidth=1.5)+
-       # scale_color_gradient(low = "blue", high = "red") +
+        geom_line(data= b_AUC, aes(x=temp, y=AUC, group = repbio, colour=community_num), linewidth=1.5)+
+        scale_color_gradient(low = "blue", high = "red") +
         geom_line(data=b_mean, aes(x=temp,y=mean_AUC, group = community),linetype='dotted', linewidth=0.8)+
         facet_wrap(~community, ncol=8)+
         scale_x_discrete(expand = c(0, 0))+
@@ -120,3 +120,22 @@ corr <- b_AUC %>%
     mean_cor = mean(c(cor12, cor13, cor23), na.rm = TRUE)
   )
 corr
+
+
+
+#+ Descarga de df b_AUC y b_mean para usar en graficas en donde se hace la 
+#+ comparación de las rxn norms de la comunidad con las rxn norms de las cepas 
+#+ que componen la comunidad 
+
+write.table(b_AUC, 
+            file='C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/ODs/AUC_comsints.tsv', 
+            quote=FALSE, 
+            sep='\t', 
+            row.names = FALSE)
+
+write.table(b_mean, 
+            file='C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/ODs/AUC_mean_comsints.tsv', 
+            quote=FALSE, 
+            sep='\t', 
+            row.names = FALSE)
+
