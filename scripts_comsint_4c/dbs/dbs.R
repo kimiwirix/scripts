@@ -140,11 +140,23 @@ correlation <- q %>%
   )
 correlation
 
+
+#+ Primero se hace la mean de las tres std curves. 
+#+ Luego, las filas que tienen otas son esta nota: Se repitió. VER qpcr plots.
+#+ Esas muestras se repitieron porque se comportaban raro. Las repeticiones 
+#+ concuerdan con las otras réplicas por lo que se eliminaron las primeras 
+#+ mediciones y se dejaron las repeticiones
+
+
 b <- q %>%
   rowwise()%>%
   mutate(Fragmentos_16S_ml = mean(c(A_Fragmentos_16S_mL,B_Fragmentos_16S_mL,C_Fragmentos_16S_ml)))%>%
-  select(!c(A_Fragmentos_16S_mL, B_Fragmentos_16S_mL, C_Fragmentos_16S_ml, notas))
-  filter(!(label_final=="CC0240XY"))
+  select(!c(A_Fragmentos_16S_mL, B_Fragmentos_16S_mL, C_Fragmentos_16S_ml)) %>%
+  filter(is.na(notas)) %>%
+  select(!notas) 
+
+
+
 
 
 write.table(b, 

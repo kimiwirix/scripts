@@ -15,8 +15,9 @@ library(cowplot)
 #+ In o: since qpcr is based on the sequenced genomes there is no timepoint 0 and 1 
 #+ In q: joins to qpcr results the metadata 
 #+ 
-#+ At the end for each community, temp, timepoint and repbio there is one
-#+ od measurement and one qpcr measurement 
+#+ o df has more entries because it has the three repbios for each community and 
+#+ q df has just the 2 repbios that got sequenced (for comsints 3,24,27 there are 3 repbios)
+
 
 o <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_dbs/ODs_db.tsv", header = TRUE,  sep='\t' )%>%
   filter(!(hrs==0 | hrs==6))%>%
@@ -26,18 +27,22 @@ m <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_d
 
 q <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_dbs/qPCRs_db.tsv", header = TRUE,  sep='\t' )%>%
   left_join(m, by ='label_final')%>%
+  filter(!is.na(community))%>%
   select(!c(Muestra, DNA_conc,Vol_qPCR, CT, date, techrep, label, label_final))
 
 
 
-#+ Junta las dos dbs para e un solo df n 
+#+ Junta las dos dbs para e un solo df n. 
+#+ At the end for each community (32), temp (3), timepoint (3) and repbio (2 or 3)
+#+ there is one od measurement and one qpcr measurement 
+
 n <- q %>%
   left_join(o, by = c('community', 'repbio', 'temp', 'timepoint', 'hrs'))
 
 
 
 
-# WTFFFF PREGUNTAR SUR 
+#+ corr coeff between the OD and the qpcr measure
 
 correlation <- n %>%
   group_by(community) %>%

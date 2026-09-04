@@ -51,20 +51,9 @@ s <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_d
 
 #reorganiza tabla por strains y su value de relative abundance 
 df<- merge(p_m, s, by = c('community','strain'))%>% #mergea metadata con proportion table por el label name 
-  mutate(strain = recode(strain,
-                         "CH23"  = "Bacillus altitudinis",
-                         "CH29"  = "Corynebacterium sp.",
-                         "CH99b" = "Staphylococcus arlettae",
-                         "CH111" = "Bacillus thuringiensis",
-                         "CH154a"= "Staphylococcus shinii",
-                         "CH90"  = "Bacillus atrophaeus",
-                         "CH149a"= "Micrococcus luteus",
-                         "CH161d"= "Bacillus infantis",
-                         "CH447" = "Priestia megaterium",
-                         "CH450" = "Metabacillus indicus"))%>%
   mutate(contamination=case_when(
-    presence==0 & rel_abd==0 ~ strain,
-    presence==1 & rel_abd>0 ~ strain,
+    presence==0 & rel_abd==0 ~ real_name,
+    presence==1 & rel_abd>0 ~ real_name,
     TRUE  ~ 'Contamination'
   ))
 
@@ -100,4 +89,10 @@ ggsave(plot,
 
 
 
+#+ Se guarda este df para usarse en las graficas de los batches como el timpepoint 0
 
+write.table(df, 
+            file='C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_dbs/ensambles.tsv', 
+            quote=FALSE, 
+            sep='\t', 
+            row.names = TRUE)
