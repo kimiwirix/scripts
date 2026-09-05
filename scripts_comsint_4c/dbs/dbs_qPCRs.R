@@ -1,4 +1,3 @@
-
 #+ -----------------------------------------------------------------------------
 #+ Master database of qPCRs from experiments, incorporates metadata, and ensamble 
 #+ information in the final table. And adjusts volumes to Frag/ml corresponding
@@ -36,7 +35,7 @@ correlation <- qpcr %>%
 correlation
 
 
-#+ Primero se hace la mean de las tres std curves. 
+#+ La correlation es alta pero no se va a hacer la mean de las tres curvas.
 #+ Luego, las filas que tienen notas son esta nota: Se repitió. VER qpcr plots.
 #+ Esas muestras se repitieron porque se comportaban raro. Las repeticiones 
 #+ concuerdan con las otras réplicas por lo que se eliminaron las primeras 
@@ -44,15 +43,9 @@ correlation
 
 
 q <- qpcr %>%
-  rowwise()%>%
-  mutate(Fragmentos_16S_ml = mean(c(A_Fragmentos_16S_mL,B_Fragmentos_16S_mL,C_Fragmentos_16S_ml)))%>%
-  select(!c(A_Fragmentos_16S_mL, B_Fragmentos_16S_mL, C_Fragmentos_16S_ml)) %>%
   filter(is.na(notas)) %>%
   select(!notas)%>%
   as.data.frame()
-
-
-
 
 
 #+ JUNTAR QPCR DATA + METADATA + ENSAMBLES QPCR YA EN UNA SOLA TABLA & ajustar 
@@ -84,9 +77,9 @@ m <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_d
 
 b <- q %>%
   left_join(m, by ='label_final')%>%
-  filter(!is.na(community)) %>%
+  filter(!is.na(community))%>%
   select(!c(label, batch, techrep))%>%
-  mutate(Fragmentos_16S_ml = Fragmentos_16S_ml * 900)
+  mutate(across(A_Fragmentos_16S_mL:C_Fragmentos_16S_ml, ~.*900))
 
 
 #+ Pero hay un problema, los ensambles no tienen temp ni repbio, entonces 
@@ -105,24 +98,29 @@ e <- q %>%
   left_join(m, by ='label_final') %>%
   filter(is.na(community))%>%
   mutate(community = communities) %>%
-  mutate(timepoint=0, hrs =0) %>%
-  select(Muestra, label_final, DNA_conc, Vol_qPCR, CT, date, Fragmentos_16S_ml,
-         community, timepoint, hrs) %>%
+  mutate(timepoint=0, hrs =0)%>%
+  select(Muestra, label_final, DNA_conc, Vol_qPCR, CT, date, A_Fragmentos_16S_mL, 
+         B_Fragmentos_16S_mL, C_Fragmentos_16S_ml, community, timepoint, hrs) %>%
   left_join(
     temp_rep,
-    by = "community")%>%
-  mutate(Fragmentos_16S_ml = Fragmentos_16S_ml/20000)
+    by = "community") %>%
+  mutate(across(A_Fragmentos_16S_mL:C_Fragmentos_16S_ml, ~./2000))
 
 
 
-#+ All. joins both df 
+#+ All. joins both dfs.
+#+ Also takes the mean of the three curves just in case it is necessary for 
+#+ further analysis 
+
 a <- b %>%
-  full_join(e)
+  full_join(e)%>%
+  rowwise()%>%
+  mutate(m_Fragmentos_16S_ml = mean(c(A_Fragmentos_16S_mL,B_Fragmentos_16S_mL,C_Fragmentos_16S_ml)))
 
 
-#+ Arrengea las comunidades en el df por orden 
+
+#+ Arrangea las comunidades en el df por orden 
 a$community <- factor(a$community, levels = communities)
-
 
 
 write.table(a, 
