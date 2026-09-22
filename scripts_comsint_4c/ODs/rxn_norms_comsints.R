@@ -66,16 +66,8 @@ rxn_norm_1<- ggplot()+
         scale_color_gradient(low = "blue", high = "red") +
         scale_x_discrete(expand = c(0, 0))+
         labs( title = "Community reaction norms",y=expression("AUC"), x = expression("Temperature °C"), color="Communities")+
-        theme(plot.title = element_text(hjust = 0.5, vjust = 3, size = 20)) 
+        theme(plot.title = element_text(hjust = 0.5, vjust = 3, size = 12, face='bold')) 
   
-
-rxn_norm_1<- ggplot()+
-  geom_point(data= b_AUC, aes(x = temp, y = AUC, group = repbio), colour="peachpuff4")+
-  geom_line(data = b_AUC, aes(x=temp, y= AUC, group=interaction(community, repbio), colour = community_num), linewidth=1)+
-  scale_color_gradient(low = "blue", high = "red") +
-  scale_x_discrete(expand = c(0, 0))+
-  labs( title = "Community reaction norms",y=expression("AUC"), x = expression("Temperature °C"), color="Communities")+
-  theme(text = element_text(size = 19), plot.title = element_text(hjust = 0.5, vjust = 2, size = 22, face = "bold"))
 
 rxn_norm_1  
 ggsave(rxn_norm_1,

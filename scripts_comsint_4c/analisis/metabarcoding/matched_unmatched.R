@@ -1,6 +1,6 @@
-#Calculates from all the comsints the percentage of frequencies corresponding to unmatched and of matched 
-#the calculation was done for 99 perc indetity
-#without primers the proportion of unmatched decreases
+#+ Calculates from all the comsints the percentage of frequencies corresponding 
+#+ to unmatched and of matched the calculation was done for 99 perc indetity
+#+ without primers the proportion of unmatched decreases
 
 library(ggplot2)
 library(readODS)
@@ -9,14 +9,17 @@ library(tidyverse)
 
 strain_ids<-c("CH111","CH90","CH161d", "CH149a","CH29","CH99b","CH154a","CH23","CH447", "CH450")
 
-frequency_table<-read.table(file = 'C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/analisis/metabarcoding/batch_0/feature-table-open-ensambles-nonchimeric.tsv',
-                                sep = "\t", header = TRUE)
+frequency_table <- read.csv("C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/analisis/metabarcoding/batches/feature-table-open-nonchimeric.tsv", 
+                            sep = "\t",
+                            header = TRUE) 
 
 
+#+ mutate saca proportions 
+#+ agrega otra columna llamada status los que si matchearon y las que no 
 
 f<-frequency_table%>%
-  mutate(across(-strain, ~ .x / sum(.x)))%>%                                    #saca proportions
-  mutate(status = ifelse(strain %in% strain_ids,                                #pone columa de los que si matchearon y las que no 
+  mutate(across(-strain, ~ .x / sum(.x)))%>%                                    
+  mutate(status = ifelse(strain %in% strain_ids,                                
                          "matched","unmatched"))%>%
   pivot_longer(
     cols = -c(strain, status),

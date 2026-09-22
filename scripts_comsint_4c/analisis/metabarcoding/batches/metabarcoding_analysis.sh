@@ -71,8 +71,10 @@ qiime quality-filter q-score \
 # 9. Agrupa las secuencias repetidas para que la comparcion con las referencias no sea tan larga
 qiime vsearch dereplicate-sequences \
   --i-sequences demux-filtered.qza \
+  --p-min-seq-length 320 \
   --o-dereplicated-sequences dereplicated-seqs.qza \
   --o-dereplicated-table dereplicated-table.qza
+
 
 # comparacion con secuencias
 # 10. open 
