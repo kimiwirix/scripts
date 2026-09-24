@@ -59,7 +59,7 @@ qiime vsearch merge-pairs \
  --i-demultiplexed-seqs trimmed-remove-primers.qza \
  --o-merged-sequences paired-end-merged.qza \
  --o-unmerged-sequences unpaired-end-merged.qza
-
+ 
 
 # 8. Filtro por q score, trimmea los ends que esten muy degradados 
 qiime quality-filter q-score \
