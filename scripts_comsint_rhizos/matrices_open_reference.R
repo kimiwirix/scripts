@@ -14,12 +14,12 @@ library(Biostrings)
 
 #Parte1------------------------------------------------------------------------------------------------------------------------------
 
-NS1<-read_ods("C:/Users/natal/Documents/LIIGH/data_NS1.ods", sheet = "syncoms")
-NS2<-read_ods("C:/Users/natal/Documents/LIIGH/data_NS2.ods", sheet = "syncoms")
-NS3<-read_ods("C:/Users/natal/Documents/LIIGH/data_NS3.ods", sheet = "syncoms")
-NS4<-read_ods("C:/Users/natal/Documents/LIIGH/data_NS4.ods", sheet = "syncoms")
-data_matched <- read_ods("C:/Users/natal/Documents/LIIGH/16S analysis/feature-table-open-all.ods", sheet = "matched")
-data_unmatched <- read_ods("C:/Users/natal/Documents/LIIGH/16S analysis/feature-table-open-all.ods", sheet = "unmatched")
+NS1<-read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/data_NS1.ods", sheet = "syncoms")
+NS2<-read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/data_NS2.ods", sheet = "syncoms")
+NS3<-read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/data_NS3.ods", sheet = "syncoms")
+NS4<-read_ods("C:/Users/natal/Documents/LIIGH/data/data_comsint_rhizos/data_NS4.ods", sheet = "syncoms")
+data_matched <- read_ods("C:/Users/natal/Documents/LIIGH/results/results_comsint_rhizos/analisis/analisis_freq_allbatches_99ident/feature-table-open-all-99ident.ods", sheet = "matched")
+data_unmatched <- read_ods("C:/Users/natal/Documents/LIIGH/results/results_comsint_rhizos/analisis/analisis_freq_allbatches_99ident/feature-table-open-all-99ident.ods", sheet = "unmatched")
 
 NS1<-as.matrix(NS1); NS1[is.na(NS1)] <- 0 #convierte a matrix y NAs a 0s
 NS2<-as.matrix(NS2); NS2[is.na(NS2)] <- 0 

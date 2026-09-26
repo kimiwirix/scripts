@@ -216,7 +216,7 @@ pt <-ggplot(pm %>%
 
 pt
 ggsave(plot = pt,
-       filename = "C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/analisis/metabarcoding/batches/shannon_boxplots_w_mean.png",
+       filename = "C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/analisis/diversity/shannon_boxplots_w_mean.png",
        bg="white",  width = 50, height = 15, units = "cm")
 
 #+ explicacion de grafica: podemos ver que en cuanto a alpha diversidad, el efecto 

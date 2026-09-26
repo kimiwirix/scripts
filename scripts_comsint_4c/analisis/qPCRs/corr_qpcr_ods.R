@@ -25,8 +25,8 @@ o <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_d
 
 m <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_dbs/metadata_db.tsv", header = TRUE,  sep='\t' )
 
-q <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_dbs/qPCRs_db.tsv", header = TRUE,  sep='\t' )%>%
-  left_join(m, by ='label_final')%>%
+q <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_dbs/qPCRs_db.tsv", header = TRUE,  sep='\t' ) %>%
+  left_join(m, by =c('label_final', 'community', 'timepoint', 'repbio', 'hrs', 'temp')) %>%
   filter(!is.na(community))%>%
   select(!c(Muestra, DNA_conc,Vol_qPCR, CT, date, techrep, label, label_final))
 
@@ -47,7 +47,7 @@ n <- q %>%
 correlation <- n %>%
   group_by(community) %>%
   summarise(
-    cor12 = cor(OD_real,log10(Fragmentos_16S_ml), method = 'pearson'))
+    cor12 = cor(OD_real,log10('Fragmentos_16S_ml'), method = 'pearson'))
 correlation
 
 
@@ -64,9 +64,9 @@ correlation
 
 
 p <- ggplot()+
-  geom_point(data = n, aes(x = OD_real, y = log10(Fragmentos_16S_ml), colour=as.factor(timepoint))) +
-  stat_smooth(data=n, aes(x = OD_real, y = log10(Fragmentos_16S_ml )), method = 'lm', formula = y~x, inherit.aes = FALSE)+
-  stat_correlation(data=n, aes(x = OD_real, y = log10(Fragmentos_16S_ml )), inherit.aes = FALSE)+
+  geom_point(data = n, aes(x = OD_real, y = log10(m_Fragmentos_16S_ml), colour=as.factor(timepoint))) +
+  stat_smooth(data=n, aes(x = OD_real, y = log10(m_Fragmentos_16S_ml )), method = 'lm', formula = y~x, inherit.aes = FALSE)+
+  stat_correlation(data=n, aes(x = OD_real, y = log10(m_Fragmentos_16S_ml )), inherit.aes = FALSE)+
   labs (title = expression ("Correlation between 16S fragments/ml and OD"["600nm"]))
 
 

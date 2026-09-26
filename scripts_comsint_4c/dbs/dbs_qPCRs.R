@@ -13,11 +13,7 @@ library(ggpubr)
 
 #+ carga el archivo y convierte los fragmentos de 16 /ul a fragmentos /ml 
 
-qpcr<- read_ods(path ="C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/analisis/qPCR/qPCR.ods", sheet = "All" )%>%
-  mutate_at(vars(`A-Fragmentos_16S_uL`, `B-Fragmentos_16S_uL`, `C-Fragmentos_16S_uL`), ~ . * 1000)%>%
-  rename(`A_Fragmentos_16S_mL`=`A-Fragmentos_16S_uL`,
-         `B_Fragmentos_16S_mL`=`B-Fragmentos_16S_uL`,
-         `C_Fragmentos_16S_ml`=`C-Fragmentos_16S_uL`)
+qpcr<- read_ods(path ="C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/analisis/qPCR/qPCR.ods", sheet = "All" )
 
 
 
@@ -27,9 +23,9 @@ qpcr<- read_ods(path ="C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/anali
 
 correlation <- qpcr %>%
   summarise(
-    cor_A_B = cor(A_Fragmentos_16S_mL, B_Fragmentos_16S_mL, method = 'pearson'),
-    cor_A_C = cor(A_Fragmentos_16S_mL, C_Fragmentos_16S_ml, method = 'pearson'),
-    cor_B_C = cor(B_Fragmentos_16S_mL, C_Fragmentos_16S_ml, method = 'pearson'),
+    cor_A_B = cor(`A-Fragmentos_16S_uL`, `B-Fragmentos_16S_uL`, method = 'pearson'),
+    cor_A_C = cor(`A-Fragmentos_16S_uL`, `C-Fragmentos_16S_uL`, method = 'pearson'),
+    cor_B_C = cor(`B-Fragmentos_16S_uL`, `C-Fragmentos_16S_uL`, method = 'pearson'),
     mean_cor = mean(c(cor_A_B, cor_A_C, cor_B_C), na.rm = TRUE)
   )
 correlation
@@ -78,8 +74,8 @@ m <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_d
 b <- q %>%
   left_join(m, by ='label_final')%>%
   filter(!is.na(community))%>%
-  select(!c(label, batch, techrep))%>%
-  mutate(across(A_Fragmentos_16S_mL:C_Fragmentos_16S_ml, ~.*900))
+  select(!c(label, techrep))%>%
+  mutate(across('A-Fragmentos_16S_uL':'C-Fragmentos_16S_uL', ~.*30))
 
 
 #+ Pero hay un problema, los ensambles no tienen temp ni repbio, entonces 
@@ -99,12 +95,12 @@ e <- q %>%
   filter(is.na(community))%>%
   mutate(community = communities) %>%
   mutate(timepoint=0, hrs =0)%>%
-  select(Muestra, label_final, DNA_conc, Vol_qPCR, CT, date, A_Fragmentos_16S_mL, 
-         B_Fragmentos_16S_mL, C_Fragmentos_16S_ml, community, timepoint, hrs) %>%
+  select(Muestra, label_final, DNA_conc, Vol_qPCR, CT, date, 'A-Fragmentos_16S_uL', 
+         'B-Fragmentos_16S_uL', 'C-Fragmentos_16S_uL', community, timepoint, hrs) %>%
   left_join(
     temp_rep,
     by = "community") %>%
-  mutate(across(A_Fragmentos_16S_mL:C_Fragmentos_16S_ml, ~./2000))
+  mutate(across('A-Fragmentos_16S_uL':'C-Fragmentos_16S_uL', ~./2))
 
 
 
@@ -114,7 +110,10 @@ e <- q %>%
 
 a <- b %>%
   full_join(e)%>%
-  rowwise()%>%
+  rowwise() %>%
+  rename(`A_Fragmentos_16S_mL`=`A-Fragmentos_16S_uL`,
+         `B_Fragmentos_16S_mL`=`B-Fragmentos_16S_uL`,
+         `C_Fragmentos_16S_ml`=`C-Fragmentos_16S_uL`) %>%
   mutate(m_Fragmentos_16S_ml = mean(c(A_Fragmentos_16S_mL,B_Fragmentos_16S_mL,C_Fragmentos_16S_ml)))
 
 

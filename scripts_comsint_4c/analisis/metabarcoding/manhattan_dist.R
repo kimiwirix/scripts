@@ -51,7 +51,7 @@ e <- read.csv(file = "C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/
   
 
 
-
+extender ensambles 
 
 
 #+ dataframe que organiiza presencia y ausencia teorética para comparar por cada 

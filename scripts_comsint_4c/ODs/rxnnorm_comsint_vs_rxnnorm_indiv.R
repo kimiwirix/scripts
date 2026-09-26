@@ -9,8 +9,17 @@ library(dplyr)
 #+ b_AUC: tiene la info del AUC de las tres réplicas de cada comsint en cada temp
 #+ b_mean: tiene la info del mean de las tres réplicas para hacer la línea punteada
 
-b_AUC <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/ODs/AUC_comsints.tsv", header = TRUE,  sep='\t' )
-b_mean <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/ODs/AUC_mean_comsints.tsv", header = TRUE,  sep='\t' )
+b_AUC_z <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_dbs/AUC_z_score_comsint.tsv", header = TRUE,  sep='\t' )
+
+b_mean <- b_AUC_z %>%
+  group_by(community, temp) %>%
+  summarise(mean_AUC_z = mean(AUC_z_score, na.rm = TRUE), .groups = "drop")
+
+
+
+b_mean$community_num <- as.numeric(sub("C", "", b_mean$community))
+b_AUC_z$community_num <- as.numeric(sub("C", "", b_AUC_z$community))
+
 
 
 #+ Files para hacer las gráficas de rxn norms de las cepas individuales:
@@ -21,8 +30,11 @@ b_mean <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c
 #+ t_mean: como no se puede dibujar una linea por réplica se dibuja una línea de la 
 #+ mean de los puntos  
 
-t_AUC <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/gc_and_rxnnorm/AUC_indiv_strains.tsv", header = TRUE,  sep='\t' )
-t_mean <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/gc_and_rxnnorm/AUC_mean_indiv_strains.tsv", header = TRUE,  sep='\t' )
+t_AUC_z <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_dbs/AUC_z_score_indivstrains.tsv", header = TRUE,  sep='\t' )
+
+t_mean <- t_AUC_z %>%
+  group_by(Cepa, temp) %>%
+  summarise(mean_AUC_z = mean(AUC_z_score, na.rm = TRUE), .groups = "drop")
 
 
 
@@ -40,14 +52,14 @@ communities<-c("C1","C2","C3","C4","C5","C6","C7","C8","C9","C10","C11","C12","C
 
 for (comsint in communities) {
   p <- ggplot()+
-    geom_point(data = b_AUC%>%
-                 filter(community == comsint), aes(x=temp, y=AUC, group = repbio), colour="peachpuff4") +
-      geom_line(data= b_AUC%>%
-                  filter(community == comsint), aes(x=temp, y=AUC, group = repbio, colour = community_num), linewidth=1.5) +
+    geom_point(data = b_AUC_z%>%
+                 filter(community == comsint), aes(x=temp, y=AUC_z_score, group = repbio), colour="peachpuff4") +
+      geom_line(data= b_AUC_z%>%
+                  filter(community == comsint), aes(x=temp, y=AUC_z_score, group = repbio, colour = community_num), linewidth=1.5) +
       geom_line(data=b_mean %>%
-                  filter(community == comsint), aes(x=temp,y=mean_AUC),linetype='dotted', linewidth=0.8)+
+                  filter(community == comsint), aes(x=temp,y=mean_AUC_z),linetype='dotted', linewidth=0.8)+
       scale_x_continuous(breaks = c(30,37,42))+
-      scale_y_continuous(limits= c(7,18.6), breaks = seq(7,18.6, by= 2.5))+
+      scale_y_continuous(limits= c(-4,3), breaks = seq(-4,3, by= 1))+
       labs( title = paste(comsint, "reaction norm"), y=expression("AUC"), x = expression("Temperature °C"))+
       theme(plot.title = element_text(hjust = 0.5, vjust = 3, size = 12),
             legend.position = "none") 
@@ -55,7 +67,6 @@ for (comsint in communities) {
   assign(comsint, p)
     
 }
-
 
 
 
@@ -70,15 +81,15 @@ italic <- setNames(paste0("italic(\"", strains, "\")"), strains)
 
 for (strain in strains) {
   q <- ggplot()+
-    geom_point(data=t_AUC%>%
-                 filter(Cepa == strain),aes( x = temp, y = AUC, group = rep), colour="peachpuff4")+
+    geom_point(data=t_AUC_z%>%
+                 filter(Cepa == strain),aes( x = temp, y = AUC_z_score, group = rep), colour="peachpuff4")+
     geom_line(data = t_mean%>%
-                filter(Cepa == strain), aes( x = temp, y = mean_AUC, group = Cepa, color=Cepa), 
+                filter(Cepa == strain), aes( x = temp, y = mean_AUC_z, group = Cepa, color=Cepa), 
               linewidth = 1.5)+
     scale_color_manual(values = custom_colors)+
     facet_wrap(~Cepa, ncol = 5, labeller = as_labeller(italic, label_parsed))+
     scale_x_continuous(breaks = c(30,37,42))+
-    scale_y_continuous(limits= c(0,15), breaks = seq(0,15, by= 5))+
+    scale_y_continuous(limits= c(-4,3), breaks = seq(-4,3, by= 1))+
     labs( x = expression("Temperature °C"))+
     theme(legend.position = "none")
   
@@ -127,6 +138,8 @@ for (comsint in unique(presence$community)) {
   
 
 }
+
+
 
 
 

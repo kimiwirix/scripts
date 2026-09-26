@@ -25,7 +25,7 @@ batch_12<- read_ods(path ="C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/C
 #+une todos los batches, y elimina los timepoints 4,5,6 de los
 #+primeros 2 batches 
 
-b<-batch_1%>%
+batches<-batch_1%>%
   bind_rows(batch_2)%>%
   bind_rows(batch_3)%>%
   bind_rows(batch_4)%>%
@@ -39,6 +39,16 @@ b<-batch_1%>%
   bind_rows(batch_12)%>%
   select(!notes)%>%
   filter(!(timepoint %in% c(4, 5, 6)))
+
+
+
+#+ adds the CC label final to the ones that were sequenced 
+m <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_dbs/metadata_db.tsv", header = TRUE)
+
+b<- batches %>%
+  left_join(m, by = c('community', 'temp', 'timepoint', 'repbio', 'batch', 'hrs')) %>%
+  select(!label)
+
 
 
 
