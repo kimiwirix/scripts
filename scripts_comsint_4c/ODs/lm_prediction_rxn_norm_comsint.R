@@ -4,7 +4,7 @@
 #+ CONCLUSION: there are rxn norms of some communities cuyo predicted values are 
 #+ similar to the measured values. SEE last plot 
 
-
+ 
 library(tidyr)
 library(dplyr)
 library(tidyverse)
