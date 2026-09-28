@@ -10,6 +10,7 @@ library(dplyr)
 library(tidyverse)
 library(tibble)
 library(ggplot2)
+library(glmnet)
 
 
 #+ individual and community tables with the Z standardized AUCs and the presence/
@@ -236,16 +237,18 @@ comms_info %>%
 
 comms_summed <- comms_summed %>%
   mutate(community = factor(community, levels = communities))
+r2_signif <- r2_signif%>%
+  mutate(community = factor(community, levels = communities))
 
 
 p1 <-ggplot()+
     geom_point(data = comms_summed, aes(x=temp, y=AUC_z_score, group = repbio), colour="peachpuff4")+
-    geom_line(data= comms_summed, aes(x=temp, y=AUC_z_score, group = repbio, colour = as.numeric(sub("C", "", community)), linetype = 'Measured'), linewidth=1.5)+
+    geom_line(data= comms_summed, aes(x=temp, y=AUC_z_score, group = repbio, colour = as.numeric(sub("C", "", community)), linetype = 'Measurement'), linewidth=1.5)+
     
     geom_point(data = comms_summed, aes(x=temp, y=i_plus_BX_equals_y, group = repbio))+
     geom_line(data= comms_summed, aes(x=temp, y=i_plus_BX_equals_y, group = repbio, linetype = 'Prediction'), linewidth=1.5)+
     
-    geom_text(data = r2_signif, aes(x = 30, y = Inf, label = paste0("R² = ", round(cor^2, 2),"\np = ", format.pval(p.value, digits = 2))),
+    geom_text(data = r2_signif, aes(x = 30, y = Inf, label = paste0("R² = ", round(cor^2, 2),"\nq = ", format.pval(q.value, digits = 2))),
       hjust = 'right',
       nudge_x = 12,
       vjust = 1.2,
@@ -253,6 +256,7 @@ p1 <-ggplot()+
     
     facet_wrap(~community, ncol=8)+
     scale_x_continuous(breaks=c(30,37,42))+
+    scale_y_continuous(limits= c(-5,5), breaks = seq(-5,5, by= 2))+
     scale_color_gradient(low = "blue", high = "red") +
     labs( title = "Measured and predicted community reaction norms",y=expression("AUC"), x = expression("Temperature °C"), color="Communities", linetype = "Prediction")+
     theme(plot.title = element_text(hjust = 0.5, vjust = 3, size = 12)) 
