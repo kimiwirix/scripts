@@ -12,7 +12,7 @@
 #+ distances. 
 #+ 
 #+ I need a df that tells me for every sample if a strain should be present or not 
-#+ and that I will compare rowwise to the patterns n the unmatched and if manhattan 
+#+ and that I will compare rowwise to the patterns in the unmatched and if manhattan 
 #+ dist == 0 then it is probable that that is one strain that failed to match to
 #+ the refs. 
 
@@ -45,13 +45,12 @@ m <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_d
 e <- read.csv(file = "C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/analisis/metabarcoding/batch_0/feature-table-open-ensambles-nonchimeric.tsv", header = TRUE, sep = "\t") %>%
   filter(startsWith(strain, "CH")) %>%
   select(1:33) %>%
-  pivot_longer(cols= -strain, names_to = "community", values_to = "presence") %>%
+  pivot_longer(cols= -strain, names_to = "community", values_to = "presence") %>% 
   mutate(presence =  ifelse( presence > 0, 1, 0)) %>%
   mutate(community = paste0("C", as.integer(sub("CC", "", community))))
   
 
 
-extender ensambles 
 
 
 #+ dataframe que organiiza presencia y ausencia teorética para comparar por cada 

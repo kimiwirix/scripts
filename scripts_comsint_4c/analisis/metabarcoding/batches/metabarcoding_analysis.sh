@@ -1,6 +1,6 @@
 #!/bin/bash                                                             
 #SBATCH --job-name=metabarcoding		                                          # Job name
-#SBATCH --chdir=/mnt/data/sur/users/nsaid/4c/metabarcoding/analysis/prueba   	# ruta para guardar todo el output			                                            
+#SBATCH --chdir=/mnt/data/sur/users/nsaid/4c/metabarcoding/analysis/   	# ruta para guardar todo el output			                                            
 #SBATCH --output=Logs_errors/%j.log        	                            # Output file (%j = Job ID)
 #SBATCH --error=Logs_errors/%j.error    	                              # Error file
 #SBATCH --time=500:00:00           					                            # Time limit (hh:mm:ss)
@@ -43,11 +43,12 @@ qiime tools import \
   --output-path paired-end-demux.qza \
   --input-format PairedEndFastqManifestPhred33V2
 
+
 #quitar primers de reads
 qiime cutadapt trim-paired \
   --i-demultiplexed-sequences paired-end-demux.qza \
-  --p-front-f CCTACGGGAGGCAGCAG  \
-  --p-front-r GGACTACCAGGGTATCTAAT \
+  --p-front-f CCTAYGGGRBGCASCAG  \
+  --p-front-r GGACTACNNGGGTATCTAAT \
   --p-cores 20 \
   --o-trimmed-sequences trimmed-remove-primers.qza
 

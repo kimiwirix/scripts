@@ -1,7 +1,14 @@
+
 #+ -----------------------------------------------------------------------------
 #+ Master database of qPCRs from experiments, incorporates metadata, and ensamble 
-#+ information in the final table. And adjusts volumes to Frag/ml corresponding
+#+ information in the final table. 
+#+ 
+#+ Makes a regression of the three std curves per assay to calculate the 
+#+ Fragmentos16S based on the CT of the samples
+#+ 
+#+ And adjusts volumes to Frag/ml corresponding
 #+ to what the 30ml flask should have had   
+#+ 
 
 library(readODS)
 library(ggplot2)
@@ -11,12 +18,62 @@ library(tidyverse)
 library(ggpubr)
 
 
-#+ carga el archivo y convierte los fragmentos de 16 /ul a fragmentos /ml 
-
-qpcr<- read_ods(path ="C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/analisis/qPCR/qPCR.ods", sheet = "All" )
 
 
+#+ En el excel qpcr_16S se agregó una hoja con la info de las tres std curves 
+#+ por assay, con esa info se va a hacer una regression line de las tres std 
+#+ curves por assay 
+#+ 
+#+ en s se agregan las columnas de fragmentos de las std curves basados en la 
+#+ concentración (el número 10400000 carina lo sacó) 
+#+ 
+#+ en regress_s salen tres nuevas columnas con datos de pendiente(m) e 
+#+ intercepto(b) de un modelo lineal que correlaciona las 3 replicas ABC de cada 
+#+ assay
 
+std <- read_ods(path ="C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/analisis/qPCR/qPCR_16S.ods", sheet = "STD_CURVES_INFO" )
+
+s <- std %>%
+  mutate(STD_Fragmentos16S_uL = Std_quantity * 1046000000/1, 
+         log_conc_DNA = log10(STD_Fragmentos16S_uL)) 
+
+regress_s <- s %>%
+  group_by(qPCR_assay) %>%
+  mutate(
+    m = coef(lm(Std_CT ~ log_conc_DNA))[2],
+    b = coef(lm(Std_CT ~ log_conc_DNA))[1], 
+    r2 = summary(lm(Std_CT ~ log_conc_DNA))$r.squared
+  ) %>%
+  distinct(qPCR_assay, m, b, r2)
+
+
+
+
+
+#+ carga el archivo y une los datos de la regrsión de las std curves para 
+#+ calcular los frag_ul con los CTs de las muestras 
+
+qpcr<- read_ods(path ="C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/analisis/qPCR/qPCR_16S.ods", sheet = "All" )
+
+q <- qpcr %>%
+  left_join(regress_s, by = 'qPCR_assay') %>%
+  mutate(
+    Fragmentos16S_uL= 10^((CT-b)/m)) %>%
+  filter(is.na(notas)) %>%
+  select(!notas)%>%
+  as.data.frame()
+
+
+
+#+ Las filas que tienen notas son esta nota: Se repitió. VER qpcr plots.
+#+ Esas muestras se repitieron porque se comportaban raro. Las repeticiones 
+#+ concuerdan con las otras réplicas por lo que se eliminaron las primeras 
+#+ mediciones y se dejaron las repeticiones
+
+
+
+#+ CALCULTAES CORRELATION TO COMPROBAR QUE LAS TRES STD CURVES SE PARECEN
+#+ 
 #+ correlation between the three replicates given by the three std curves
 #+ are highly similar. thf, from now on we will use the mean measurement 
 #+ calculated in q for further analysis
@@ -31,17 +88,9 @@ correlation <- qpcr %>%
 correlation
 
 
-#+ La correlation es alta pero no se va a hacer la mean de las tres curvas.
-#+ Luego, las filas que tienen notas son esta nota: Se repitió. VER qpcr plots.
-#+ Esas muestras se repitieron porque se comportaban raro. Las repeticiones 
-#+ concuerdan con las otras réplicas por lo que se eliminaron las primeras 
-#+ mediciones y se dejaron las repeticiones
 
 
-q <- qpcr %>%
-  filter(is.na(notas)) %>%
-  select(!notas)%>%
-  as.data.frame()
+
 
 
 #+ JUNTAR QPCR DATA + METADATA + ENSAMBLES QPCR YA EN UNA SOLA TABLA & ajustar 
@@ -55,6 +104,8 @@ q <- qpcr %>%
 #+ en PASO10.2 y al último se diluyeron 1:100 300ul:30ml. 
 #+ 
 #+ PLT PARA ENSAMBLES los frag/ml se tienen que dividir entre 20000. 
+#+ 
+#+ REVISION CON SUR: ENSMABLES SE DIVIDEN ENTRE 2
 
 
 #+ Batches: de los 30ml de cultivo se extrajeron 2ml (vol/15),luego se hizo extraccion
@@ -62,10 +113,13 @@ q <- qpcr %>%
 #+ (vol/60).
 #+ 
 #+ PLT PARA BATCHES: los frag/ml se tienen que multiplicar por 15*60 (*900)
+#+ 
+#+ #+ REVISION CON SUR: BATCHES SE MULTIPLICAN POR 30
 
 
 #+ METADATA
-m <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_dbs/metadata_db.tsv", header = TRUE,  sep='\t' )
+m <- read.table(file = "C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_dbs/metadata_db.tsv", header = TRUE,  sep='\t' ) %>%
+  select(!date)
 
 
 #+ Hace dos df. Uno para las muestras de los batches (b) y otra para los ensambles (e). 
@@ -75,7 +129,7 @@ b <- q %>%
   left_join(m, by ='label_final')%>%
   filter(!is.na(community))%>%
   select(!c(label, techrep))%>%
-  mutate(across('A-Fragmentos_16S_uL':'C-Fragmentos_16S_uL', ~.*30))
+  mutate(Fragmentos16S_uL=Fragmentos16S_uL * 30)
 
 
 #+ Pero hay un problema, los ensambles no tienen temp ni repbio, entonces 
@@ -92,15 +146,14 @@ temp_rep <- b %>%
 
 e <- q %>%
   left_join(m, by ='label_final') %>%
-  filter(is.na(community))%>%
+  filter(is.na(community)) %>%
   mutate(community = communities) %>%
   mutate(timepoint=0, hrs =0)%>%
-  select(Muestra, label_final, DNA_conc, Vol_qPCR, CT, date, 'A-Fragmentos_16S_uL', 
-         'B-Fragmentos_16S_uL', 'C-Fragmentos_16S_uL', community, timepoint, hrs) %>%
+  select(Muestra, label_final, DNA_conc, Vol_qPCR, CT, date, Fragmentos16S_uL , community, timepoint, hrs) %>%
   left_join(
     temp_rep,
     by = "community") %>%
-  mutate(across('A-Fragmentos_16S_uL':'C-Fragmentos_16S_uL', ~./2))
+  mutate(Fragmentos16S_uL=Fragmentos16S_uL/2)
 
 
 
@@ -109,12 +162,8 @@ e <- q %>%
 #+ further analysis 
 
 a <- b %>%
-  full_join(e)%>%
-  rowwise() %>%
-  rename(`A_Fragmentos_16S_mL`=`A-Fragmentos_16S_uL`,
-         `B_Fragmentos_16S_mL`=`B-Fragmentos_16S_uL`,
-         `C_Fragmentos_16S_ml`=`C-Fragmentos_16S_uL`) %>%
-  mutate(m_Fragmentos_16S_ml = mean(c(A_Fragmentos_16S_mL,B_Fragmentos_16S_mL,C_Fragmentos_16S_ml)))
+  full_join(e) %>%
+  rename(`Fragmentos16S_mL_regression`=`Fragmentos16S_uL`)
 
 
 

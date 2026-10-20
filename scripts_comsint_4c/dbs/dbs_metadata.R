@@ -10,13 +10,15 @@ library(dplyr)
 seq<- read_ods(path ="C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/analisis/metabarcoding/DNA_extr_batches.ods", sheet = "sequencing" )
 
 b<-seq%>%
-  select(community, techrep, temp, timepoint, repbio, label, label_final, batch)%>%
+  select(community, techrep, temp, timepoint, repbio, label, label_final, batch, date, batch_extraction, batch_sequencing, batch_qpcr)%>%
   mutate(hrs= case_when(
     timepoint == 1.5 ~ 9,
     timepoint == 2 ~ 12,
     timepoint == 3 ~ 24
   ))%>%
-  mutate(community = sub("^C0", "C", community))
+  mutate(community = sub("^C0", "C", community)) 
+
+
 
 write.table(b, 
             file='C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_dbs/metadata_db.tsv', 

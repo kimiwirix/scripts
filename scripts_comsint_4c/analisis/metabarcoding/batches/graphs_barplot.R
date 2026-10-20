@@ -2,7 +2,6 @@
 #+ 32 comunidades, 3 temperaturas, dos replicas (para comsints 3,24,27 son 3 reps)
 #+ y 4 tiempos contando el T0 de los ensambles (hrs: 0, 9, 12, 24)
 
-library(readODS)
 library(reshape2)
 library(ggplot2)
 library(patchwork)
@@ -23,8 +22,11 @@ strain_ids<-c("CH111","CH90","CH161d", "CH149a","CH29","CH99b","CH154a","CH23","
 #+ arrojando wierd values, this takes the whole .tsv from qiime and only leaves the 
 #+ reads that matched to the strains 
 
-f <- read.csv("C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/analisis/metabarcoding/batches/matched.tsv", sep = "\t",
+f <- read.csv("C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/analisis/metabarcoding/all_batch0_batches/feature-table-open_matched.tsv", sep = "\t",
          header = TRUE) 
+fantes <- read.csv("C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/analisis/metabarcoding/batches/matched.tsv", sep = "\t",
+              header = TRUE) 
+
 
 m <- f %>%
   filter(X.OTU.ID %in% strain_ids) %>%
@@ -106,6 +108,9 @@ e <-read.table(file = 'C:/Users/natal/Documents/LIIGH/data/data_comsint_4c/CC_db
 
 
 
+e$rel_abd <- as.numeric(e$rel_abd)
+c$rel_abd <- as.numeric(c$rel_abd)
+
 #+ All. joins both df 
 
 a <- c %>%
@@ -137,7 +142,7 @@ for (comsint in communities) {
   pt <- ggplot(data = a %>%
            filter(community==comsint), aes(x = as.factor(hrs), y = rel_abd, fill =contamination, group=strain))+ 
     geom_bar(position = "stack", stat = "identity") +
-    facet_grid(repbio ~temp, labeller = labeller(repbio = new_labels, temp=new_labels_temp)) +
+    facet_grid(repbio ~temp, labeller = labeller(repbio = new_labels_rep, temp=new_labels_temp)) +
     scale_fill_manual(values = c(custom_colors, Contamination="#FFED29"),
                       labels = italic) + 
     labs(title = paste0( comsint, " composition"),
@@ -146,7 +151,7 @@ for (comsint in communities) {
   
   
   ggsave(plot = pt,
-         filename = file.path(paste0("C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/analisis/metabarcoding/batches/barplots/", comsint, ".png")),
+         filename = file.path(paste0("C:/Users/natal/Documents/LIIGH/results/results_comsint_4c/analisis/metabarcoding/all_batch0_batches/barplots/", comsint, ".png")),
          bg="white",  width = 30, height = 17, units = "cm")   
   
 }

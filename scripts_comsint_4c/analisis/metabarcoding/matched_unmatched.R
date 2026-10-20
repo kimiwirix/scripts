@@ -20,12 +20,12 @@ frequency_table <- read.csv("C:/Users/natal/Documents/LIIGH/results/results_coms
 f<-frequency_table%>%
   mutate(across(-strain, ~ .x / sum(.x)))%>%                                    
   mutate(status = ifelse(strain %in% strain_ids,                                
-                         "matched","unmatched"))%>%
+                         "matched","unmatched")) %>% 
   pivot_longer(
     cols = -c(strain, status),
     names_to = "community_label",
     values_to = "freq"
-  )%>%
+  ) %>%
   group_by(community_label, status) %>%
   summarise(total_frequency = sum(freq), .groups = "drop")
   
